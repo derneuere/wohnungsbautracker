@@ -1,0 +1,86 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --color-berlin-red: #BE2837;
+  --color-berlin-red-dark: #9A1F2C;
+  --color-berlin-red-light: #E8D0D3;
+  --color-bg: #F5F5F5;
+  --color-surface: #FFFFFF;
+  --color-text: #1A1A1A;
+  --color-text-muted: #666666;
+  --color-border: #E0E0E0;
+  --color-border-strong: #CCCCCC;
+
+  --color-party-cdu: #000000;
+  --color-party-spd: #E3000F;
+  --color-party-gruene: #46962B;
+  --color-party-linke: #BE3075;
+  --color-party-fdp: #FFED00;
+  --color-party-afd: #009EE0;
+  --color-party-bsw: #8B0000;
+}
+
+* { box-sizing: border-box; }
+
+html, body, #app { min-height: 100vh; }
+
+body {
+  margin: 0;
+  font-family: var(--font-sans);
+  background-color: var(--color-bg);
+  color: var(--color-text);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Leaflet overrides */
+.leaflet-container {
+  width: 100%;
+  height: 100%;
+  font-family: var(--font-sans) !important;
+}
+
+.leaflet-popup-content-wrapper {
+  border-radius: 4px !important;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15) !important;
+}
+
+.leaflet-popup-content {
+  margin: 12px 16px !important;
+  font-size: 14px !important;
+  line-height: 1.5 !important;
+}
+
+/* Leaflet focus/click overrides */
+.leaflet-interactive:focus {
+  outline: none !important;
+}
+
+.leaflet-container a:focus {
+  outline: none !important;
+}
+
+.leaflet-popup-content-wrapper,
+.leaflet-popup-tip {
+  box-shadow: 0 2px 8px rgba(0,0,0,0.12) !important;
+}
+
+/* Bezirk tooltips */
+.bezirk-tooltip {
+  background: white !important;
+  border: 1px solid var(--color-border) !important;
+  border-radius: 4px !important;
+  padding: 6px 10px !important;
+  font-size: 13px !important;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.12) !important;
+  color: var(--color-text) !important;
+}
+
+.bezirk-tooltip::before {
+  border-top-color: var(--color-border) !important;
+}
+
+/* Status badges */
+.status-blockiert { background-color: #DC2626; color: white; }
+.status-verzögert { background-color: #F59E0B; color: #1A1A1A; }
+.status-abgelehnt { background-color: #6B7280; color: white; }
