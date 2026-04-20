@@ -41,11 +41,21 @@ function HomePage() {
   const totalApproved = stats.reduce((sum, s) => sum + s.approvedCount, 0)
   const totalCompleted = stats.reduce((sum, s) => sum + s.completedCount, 0)
 
-  const partyCounts = useMemo(() => {
-    const counts: Record<string, number> = {}
-    filteredProjects.forEach((p) => { counts[p.party] = (counts[p.party] || 0) + 1 })
-    return Object.entries(counts).sort((a, b) => b[1] - a[1])
-  }, [filteredProjects])
+const partyCounts = useMemo(() => {
+  const counts: Record<string, number> = {}
+
+  filteredProjects.forEach((p) => {
+    p.party
+      .split(',')
+      .map((party) => party.trim())
+      .filter(Boolean)
+      .forEach((party) => {
+        counts[party] = (counts[party] || 0) + 1
+      })
+  })
+
+  return Object.entries(counts).sort((a, b) => b[1] - a[1])
+}, [filteredProjects])
 
   return (
     <div className="min-h-screen bg-white">
@@ -60,7 +70,7 @@ function HomePage() {
 
       {/* Map */}
       <section>
-        <div className="h-[450px]">
+        <div className="w-full h-[280px] sm:h-[320px] md:h-[350px]">
           <Suspense fallback={<div className="flex h-full items-center justify-center text-xs text-[#ccc]">Laden...</div>}>
             <MapView projects={filteredProjects} bezirkPartyMap={bezirkPartyMap} />
           </Suspense>
@@ -78,7 +88,7 @@ function HomePage() {
           ].map((item, i) => (
             <div
               key={i}
-              className={`border-[#111] py-8 text-center ${i < 3 ? 'border-r' : ''} ${i === 1 ? 'sm:border-r' : ''}`}
+              className="border-[#111] py-8 text-center"
             >
               <div className={`text-4xl font-black tabular-nums sm:text-5xl ${item.red ? 'text-[#BE2837]' : 'text-[#111]'}`}>
                 {item.format ? item.val.toLocaleString('de-DE') : item.val}
@@ -136,21 +146,66 @@ function HomePage() {
       <section className="mx-auto max-w-5xl px-6 pb-12 sm:px-12">
         <div className="divide-y divide-[#E5E5E5]">
           {filteredProjects.map((p) => (
-            <article key={p.id} className="grid gap-4 py-5 sm:grid-cols-12">
-              <div className="flex items-start gap-3 sm:col-span-8">
+            <article key={p.id} className="grid gap-3 py-5 sm:grid-cols-12">
+              {/* Mobile top row */}
+              <div className="order-1 flex flex-wrap items-start justify-between gap-2 sm:hidden">
+                <span className={`rounded px-2 py-0.5 text-xs font-medium ${
+                  p.status === 'blockiert' ? 'bg-[#BE2837] text-white' :
+                  p.status === 'verzögert' ? 'bg-[#F59E0B] text-black' :
+                  'bg-[#E5E5E5] text-[#666]'
+                }`}>
+                  {p.status.charAt(0).toUpperCase() + p.status.slice(1)}
+                </span>
+
+                <div className="flex flex-wrap items-center justify-end gap-2">
+                  {p.party.split(',').map((party: string, i: number) => {
+                    const trimmedParty = party.trim()
+                    return (
+                      <span
+                        key={i}
+                        className="rounded px-2 py-0.5 text-[10px] font-medium"
+                        style={{
+                          backgroundColor: `${PARTY_COLORS[trimmedParty] || '#999'}1a`,
+                          color: PARTY_COLORS[trimmedParty] || '#999',
+                        }}
+                      >
+                        {trimmedParty}
+                      </span>
+                    )
+                  })}
+                  <span className="rounded bg-[#EEF3FF] px-2 py-0.5 text-[10px] font-medium text-[#3B5CCC]">
+                    {p.bezirk}
+                  </span>
+                </div>
+              </div>
+
+              {/* Main content */}
+              <div className="order-2 flex items-start gap-3 sm:order-1 sm:col-span-8">
                 <div className="mt-1.5 flex flex-shrink-0 gap-0.5">
                   {p.party.split(',').map((party: string, i: number) => (
-                    <span key={i} className="inline-block h-3 w-3 rounded-full" style={{ backgroundColor: PARTY_COLORS[party.trim()] || '#ccc' }} />
+                    <span
+                      key={i}
+                      className="inline-block h-3 w-3 rounded-full"
+                      style={{ backgroundColor: PARTY_COLORS[party.trim()] || '#ccc' }}
+                    />
                   ))}
                 </div>
                 <div>
                   <h3 className="text-sm font-bold leading-snug text-[#111]">
                     {p.title}
-                    {p.unitCount && <span className="ml-2 text-xs font-medium text-[#BE2837]">{p.unitCount.toLocaleString('de-DE')} WE</span>}
+                    {p.unitCount && (
+                      <span className="ml-2 text-xs font-medium text-[#BE2837]">
+                        {p.unitCount.toLocaleString('de-DE')} WE
+                      </span>
+                    )}
                   </h3>
+
                   {p.description && (
-                    <p className="mt-1 text-sm leading-relaxed text-[#888]">{p.description}</p>
+                    <p className="mt-1 text-sm leading-relaxed text-[#888]">
+                      {p.description}
+                    </p>
                   )}
+
                   {p.blockers && (() => {
                     try {
                       const blockers = typeof p.blockers === 'string' ? JSON.parse(p.blockers) : p.blockers
@@ -166,17 +221,65 @@ function HomePage() {
                       return (
                         <div className="mt-2 flex flex-wrap gap-1">
                           {blockers.map((b: any, i: number) => (
-                            <span key={i} className={`rounded px-1.5 py-0.5 text-[10px] font-medium ${typeColors[b.type] || 'bg-gray-100 text-gray-600'}`}>
+                            <span
+                              key={i}
+                              className={`rounded px-1.5 py-0.5 text-[10px] font-medium ${typeColors[b.type] || 'bg-gray-100 text-gray-600'}`}
+                            >
                               {b.name}
                             </span>
                           ))}
                         </div>
                       )
-                    } catch { return null }
+                    } catch {
+                      return null
+                    }
                   })()}
+
+                  {/* Mobile meta row */}
+                  <div className="mt-3 grid grid-cols-2 gap-x-4 gap-y-1 text-xs text-[#666] sm:hidden">
+                    <div>
+                      <div className="font-medium text-[#333]">{p.party.split(',').join(', ')}</div>
+                      <div>{p.bezirk}</div>
+                      {p.date && <div>{p.date}</div>}
+                      {p.sourceUrl && (
+                        <a
+                          href={p.sourceUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="mt-1 inline-block text-[#BE2837] no-underline hover:underline"
+                        >
+                          Drucksache
+                        </a>
+                      )}
+                    </div>
+
+                    <div className="text-left">
+                      {(() => {
+                        try {
+                          const urls = typeof p.pressUrls === 'string' ? JSON.parse(p.pressUrls) : p.pressUrls
+                          if (!Array.isArray(urls)) return null
+                          return urls.map((link: any, i: number) => (
+                            <a
+                              key={i}
+                              href={link.url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="block text-[#666] no-underline hover:text-[#333] hover:underline"
+                            >
+                              {link.title}
+                            </a>
+                          ))
+                        } catch {
+                          return null
+                        }
+                      })()}
+                    </div>
+                  </div>
                 </div>
               </div>
-              <div className="flex items-start gap-4 text-xs text-[#999] sm:col-span-4 sm:justify-end sm:text-right">
+
+              {/* Desktop meta */}
+              <div className="hidden text-xs text-[#999] sm:col-span-4 sm:flex sm:items-start sm:justify-end sm:gap-4 sm:text-right">
                 <div>
                   <div className="font-medium text-[#333]">{p.party.split(',').join(', ')}</div>
                   <div>{p.bezirk}</div>
@@ -192,7 +295,12 @@ function HomePage() {
                 {(p.sourceUrl || p.pressUrls) && (
                   <div className="mt-0.5 flex flex-col items-end gap-0.5">
                     {p.sourceUrl && (
-                      <a href={p.sourceUrl} target="_blank" rel="noopener noreferrer" className="text-[#BE2837] no-underline hover:underline">
+                      <a
+                        href={p.sourceUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-[#BE2837] no-underline hover:underline"
+                      >
                         Drucksache
                       </a>
                     )}
@@ -201,11 +309,19 @@ function HomePage() {
                         const urls = typeof p.pressUrls === 'string' ? JSON.parse(p.pressUrls) : p.pressUrls
                         if (!Array.isArray(urls)) return null
                         return urls.map((link: any, i: number) => (
-                          <a key={i} href={link.url} target="_blank" rel="noopener noreferrer" className="text-[#666] no-underline hover:underline hover:text-[#333]">
+                          <a
+                            key={i}
+                            href={link.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-[#666] no-underline hover:text-[#333] hover:underline"
+                          >
                             {link.title}
                           </a>
                         ))
-                      } catch { return null }
+                      } catch {
+                        return null
+                      }
                     })()}
                   </div>
                 )}
