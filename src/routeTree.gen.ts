@@ -11,7 +11,15 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as AdminRouteRouteImport } from './routes/admin/route'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as DesignsIndexRouteImport } from './routes/designs/index'
 import { Route as AdminIndexRouteImport } from './routes/admin/index'
+import { Route as ProjektSlugRouteImport } from './routes/projekt/$slug'
+import { Route as DesignsZeitungRouteImport } from './routes/designs/zeitung'
+import { Route as DesignsLogosRouteImport } from './routes/designs/logos'
+import { Route as DesignsKlassikRouteImport } from './routes/designs/klassik'
+import { Route as DesignsKiezRouteImport } from './routes/designs/kiez'
+import { Route as DesignsDashboardRouteImport } from './routes/designs/dashboard'
+import { Route as DesignsAmtRouteImport } from './routes/designs/amt'
 import { Route as AdminStatsRouteImport } from './routes/admin/stats'
 import { Route as AdminBvvRouteImport } from './routes/admin/bvv'
 
@@ -25,10 +33,50 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DesignsIndexRoute = DesignsIndexRouteImport.update({
+  id: '/designs/',
+  path: '/designs/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminIndexRoute = AdminIndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => AdminRouteRoute,
+} as any)
+const ProjektSlugRoute = ProjektSlugRouteImport.update({
+  id: '/projekt/$slug',
+  path: '/projekt/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DesignsZeitungRoute = DesignsZeitungRouteImport.update({
+  id: '/designs/zeitung',
+  path: '/designs/zeitung',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DesignsLogosRoute = DesignsLogosRouteImport.update({
+  id: '/designs/logos',
+  path: '/designs/logos',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DesignsKlassikRoute = DesignsKlassikRouteImport.update({
+  id: '/designs/klassik',
+  path: '/designs/klassik',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DesignsKiezRoute = DesignsKiezRouteImport.update({
+  id: '/designs/kiez',
+  path: '/designs/kiez',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DesignsDashboardRoute = DesignsDashboardRouteImport.update({
+  id: '/designs/dashboard',
+  path: '/designs/dashboard',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DesignsAmtRoute = DesignsAmtRouteImport.update({
+  id: '/designs/amt',
+  path: '/designs/amt',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const AdminStatsRoute = AdminStatsRouteImport.update({
   id: '/stats',
@@ -46,13 +94,29 @@ export interface FileRoutesByFullPath {
   '/admin': typeof AdminRouteRouteWithChildren
   '/admin/bvv': typeof AdminBvvRoute
   '/admin/stats': typeof AdminStatsRoute
+  '/designs/amt': typeof DesignsAmtRoute
+  '/designs/dashboard': typeof DesignsDashboardRoute
+  '/designs/kiez': typeof DesignsKiezRoute
+  '/designs/klassik': typeof DesignsKlassikRoute
+  '/designs/logos': typeof DesignsLogosRoute
+  '/designs/zeitung': typeof DesignsZeitungRoute
+  '/projekt/$slug': typeof ProjektSlugRoute
   '/admin/': typeof AdminIndexRoute
+  '/designs/': typeof DesignsIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/admin/bvv': typeof AdminBvvRoute
   '/admin/stats': typeof AdminStatsRoute
+  '/designs/amt': typeof DesignsAmtRoute
+  '/designs/dashboard': typeof DesignsDashboardRoute
+  '/designs/kiez': typeof DesignsKiezRoute
+  '/designs/klassik': typeof DesignsKlassikRoute
+  '/designs/logos': typeof DesignsLogosRoute
+  '/designs/zeitung': typeof DesignsZeitungRoute
+  '/projekt/$slug': typeof ProjektSlugRoute
   '/admin': typeof AdminIndexRoute
+  '/designs': typeof DesignsIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -60,19 +124,74 @@ export interface FileRoutesById {
   '/admin': typeof AdminRouteRouteWithChildren
   '/admin/bvv': typeof AdminBvvRoute
   '/admin/stats': typeof AdminStatsRoute
+  '/designs/amt': typeof DesignsAmtRoute
+  '/designs/dashboard': typeof DesignsDashboardRoute
+  '/designs/kiez': typeof DesignsKiezRoute
+  '/designs/klassik': typeof DesignsKlassikRoute
+  '/designs/logos': typeof DesignsLogosRoute
+  '/designs/zeitung': typeof DesignsZeitungRoute
+  '/projekt/$slug': typeof ProjektSlugRoute
   '/admin/': typeof AdminIndexRoute
+  '/designs/': typeof DesignsIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/admin' | '/admin/bvv' | '/admin/stats' | '/admin/'
+  fullPaths:
+    | '/'
+    | '/admin'
+    | '/admin/bvv'
+    | '/admin/stats'
+    | '/designs/amt'
+    | '/designs/dashboard'
+    | '/designs/kiez'
+    | '/designs/klassik'
+    | '/designs/logos'
+    | '/designs/zeitung'
+    | '/projekt/$slug'
+    | '/admin/'
+    | '/designs/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/admin/bvv' | '/admin/stats' | '/admin'
-  id: '__root__' | '/' | '/admin' | '/admin/bvv' | '/admin/stats' | '/admin/'
+  to:
+    | '/'
+    | '/admin/bvv'
+    | '/admin/stats'
+    | '/designs/amt'
+    | '/designs/dashboard'
+    | '/designs/kiez'
+    | '/designs/klassik'
+    | '/designs/logos'
+    | '/designs/zeitung'
+    | '/projekt/$slug'
+    | '/admin'
+    | '/designs'
+  id:
+    | '__root__'
+    | '/'
+    | '/admin'
+    | '/admin/bvv'
+    | '/admin/stats'
+    | '/designs/amt'
+    | '/designs/dashboard'
+    | '/designs/kiez'
+    | '/designs/klassik'
+    | '/designs/logos'
+    | '/designs/zeitung'
+    | '/projekt/$slug'
+    | '/admin/'
+    | '/designs/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AdminRouteRoute: typeof AdminRouteRouteWithChildren
+  DesignsAmtRoute: typeof DesignsAmtRoute
+  DesignsDashboardRoute: typeof DesignsDashboardRoute
+  DesignsKiezRoute: typeof DesignsKiezRoute
+  DesignsKlassikRoute: typeof DesignsKlassikRoute
+  DesignsLogosRoute: typeof DesignsLogosRoute
+  DesignsZeitungRoute: typeof DesignsZeitungRoute
+  ProjektSlugRoute: typeof ProjektSlugRoute
+  DesignsIndexRoute: typeof DesignsIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -91,12 +210,68 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/designs/': {
+      id: '/designs/'
+      path: '/designs'
+      fullPath: '/designs/'
+      preLoaderRoute: typeof DesignsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin/': {
       id: '/admin/'
       path: '/'
       fullPath: '/admin/'
       preLoaderRoute: typeof AdminIndexRouteImport
       parentRoute: typeof AdminRouteRoute
+    }
+    '/projekt/$slug': {
+      id: '/projekt/$slug'
+      path: '/projekt/$slug'
+      fullPath: '/projekt/$slug'
+      preLoaderRoute: typeof ProjektSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/designs/zeitung': {
+      id: '/designs/zeitung'
+      path: '/designs/zeitung'
+      fullPath: '/designs/zeitung'
+      preLoaderRoute: typeof DesignsZeitungRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/designs/logos': {
+      id: '/designs/logos'
+      path: '/designs/logos'
+      fullPath: '/designs/logos'
+      preLoaderRoute: typeof DesignsLogosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/designs/klassik': {
+      id: '/designs/klassik'
+      path: '/designs/klassik'
+      fullPath: '/designs/klassik'
+      preLoaderRoute: typeof DesignsKlassikRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/designs/kiez': {
+      id: '/designs/kiez'
+      path: '/designs/kiez'
+      fullPath: '/designs/kiez'
+      preLoaderRoute: typeof DesignsKiezRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/designs/dashboard': {
+      id: '/designs/dashboard'
+      path: '/designs/dashboard'
+      fullPath: '/designs/dashboard'
+      preLoaderRoute: typeof DesignsDashboardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/designs/amt': {
+      id: '/designs/amt'
+      path: '/designs/amt'
+      fullPath: '/designs/amt'
+      preLoaderRoute: typeof DesignsAmtRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/admin/stats': {
       id: '/admin/stats'
@@ -134,6 +309,14 @@ const AdminRouteRouteWithChildren = AdminRouteRoute._addFileChildren(
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRouteRoute: AdminRouteRouteWithChildren,
+  DesignsAmtRoute: DesignsAmtRoute,
+  DesignsDashboardRoute: DesignsDashboardRoute,
+  DesignsKiezRoute: DesignsKiezRoute,
+  DesignsKlassikRoute: DesignsKlassikRoute,
+  DesignsLogosRoute: DesignsLogosRoute,
+  DesignsZeitungRoute: DesignsZeitungRoute,
+  ProjektSlugRoute: ProjektSlugRoute,
+  DesignsIndexRoute: DesignsIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

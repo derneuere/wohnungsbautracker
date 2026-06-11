@@ -1,5 +1,7 @@
 import { HeadContent, Outlet, Scripts, createRootRoute, Link, useRouterState } from '@tanstack/react-router'
 import appCss from '../styles.css?url'
+import WbtLogo from '../components/WbtLogo'
+import { BLUE, YELLOW } from '../lib/campaign'
 
 export const Route = createRootRoute({
   head: () => ({
@@ -41,45 +43,34 @@ function RootLayout() {
 function AdminHeader() {
   const pathname = useRouterState({ select: (s) => s.location.pathname })
 
+  const links = [
+    { to: '/admin', label: 'Projekte' },
+    { to: '/admin/bvv', label: 'BVV-Parteien' },
+    { to: '/admin/stats', label: 'Statistiken' },
+  ]
+
   return (
-    <header className="sticky top-0 z-[1000] border-b border-[#E5E5E5] bg-white">
-      <div className="mx-auto flex h-14 max-w-7xl items-center justify-between px-4">
-        <Link to="/" className="flex items-center gap-2 text-[#111] no-underline">
-          <span className="text-lg font-bold tracking-tight">
-            Wohnungsbau-Tracker <span className="text-[#BE2837]">Berlin</span>
+    <header className="sticky top-0 z-[1000] border-b border-black/5 bg-white" style={{ fontFamily: "'Archivo', 'Helvetica Neue', sans-serif" }}>
+      <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-5">
+        <Link to="/" className="flex items-center gap-3 no-underline" title="Zur Startseite">
+          <WbtLogo height={30} />
+          <span className="px-2 py-1 text-[10px] font-black tracking-[0.2em]" style={{ backgroundColor: YELLOW, color: BLUE }}>
+            ADMIN
           </span>
         </Link>
-        <nav className="flex gap-1">
-          <Link
-            to="/admin"
-            className={`rounded px-3 py-1.5 text-sm font-medium no-underline transition-colors ${
-              pathname === '/admin'
-                ? 'bg-[#BE2837] text-white'
-                : 'text-[#999] hover:bg-gray-100 hover:text-[#111]'
-            }`}
-          >
-            Projekte
-          </Link>
-          <Link
-            to="/admin/bvv"
-            className={`rounded px-3 py-1.5 text-sm font-medium no-underline transition-colors ${
-              pathname === '/admin/bvv'
-                ? 'bg-[#BE2837] text-white'
-                : 'text-[#999] hover:bg-gray-100 hover:text-[#111]'
-            }`}
-          >
-            BVV-Parteien
-          </Link>
-          <Link
-            to="/admin/stats"
-            className={`rounded px-3 py-1.5 text-sm font-medium no-underline transition-colors ${
-              pathname === '/admin/stats'
-                ? 'bg-[#BE2837] text-white'
-                : 'text-[#999] hover:bg-gray-100 hover:text-[#111]'
-            }`}
-          >
-            Statistiken
-          </Link>
+        <nav className="flex gap-1.5">
+          {links.map((l) => (
+            <Link
+              key={l.to}
+              to={l.to}
+              className={`rounded-full px-4 py-1.5 text-[12px] font-extrabold uppercase tracking-[0.1em] no-underline transition-colors ${
+                pathname === l.to ? 'text-white' : 'text-black/50 hover:text-black'
+              }`}
+              style={pathname === l.to ? { backgroundColor: BLUE } : undefined}
+            >
+              {l.label}
+            </Link>
+          ))}
         </nav>
       </div>
     </header>

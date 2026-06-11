@@ -2,8 +2,13 @@ import { createFileRoute, Outlet } from '@tanstack/react-router'
 import { useState, useRef } from 'react'
 import { checkPassword } from '../../server/auth'
 import { exportDb, importDb } from '../../server/db-transfer'
+import { ARCHIVO_FONT_LINKS, BLUE, CYAN, DEEP, YELLOW, body, display } from '../../lib/campaign'
 
 export const Route = createFileRoute('/admin')({
+  head: () => ({
+    meta: [{ title: 'Admin — Wohnungsbau-Tracker Berlin' }],
+    links: ARCHIVO_FONT_LINKS,
+  }),
   component: AdminLayout,
 })
 
@@ -26,7 +31,7 @@ function AdminLayout() {
   }
 
   const handleExport = async () => {
-    setDbStatus('Exportiere...')
+    setDbStatus('Exportiere…')
     try {
       const result = await exportDb()
       const bytes = Uint8Array.from(atob(result.data), (c) => c.charCodeAt(0))
@@ -51,12 +56,12 @@ function AdminLayout() {
       e.target.value = ''
       return
     }
-    setDbStatus('Importiere...')
+    setDbStatus('Importiere…')
     try {
       const buffer = await file.arrayBuffer()
       const base64 = btoa(String.fromCharCode(...new Uint8Array(buffer)))
       const result = await importDb({ data: base64 })
-      setDbStatus(`Import fertig (${(result.size / 1024).toFixed(0)} KB) — Seite wird neu geladen...`)
+      setDbStatus(`Import fertig (${(result.size / 1024).toFixed(0)} KB) — Seite wird neu geladen…`)
       setTimeout(() => window.location.reload(), 1000)
     } catch (err) {
       setDbStatus('Import fehlgeschlagen')
@@ -66,23 +71,39 @@ function AdminLayout() {
 
   if (!authed) {
     return (
-      <main className="mx-auto max-w-md px-4 py-20">
-        <div className="rounded border border-[var(--color-border)] bg-white p-6">
-          <h1 className="mb-4 text-xl font-bold">Admin-Zugang</h1>
-          <form onSubmit={handleLogin}>
-            <label className="mb-1 block text-sm font-medium text-[var(--color-text-muted)]">Passwort</label>
+      <main
+        className="flex min-h-screen flex-col items-center justify-center px-6"
+        style={{ ...body, background: `linear-gradient(180deg, ${DEEP} 0%, ${BLUE} 70%, #07336B 100%)` }}
+      >
+        <div className="w-full max-w-sm">
+          <div className="h-2 w-32" style={{ backgroundColor: CYAN }} />
+          <h1 className="mt-5" style={{ ...display, color: YELLOW, fontSize: '2rem', lineHeight: 1.05 }}>
+            Hier arbeiten die, die hinsehen.
+          </h1>
+          <p className="mt-3 text-sm font-semibold text-white/60">
+            Admin-Zugang zum Wohnungsbau-Tracker.
+          </p>
+          <form onSubmit={handleLogin} className="mt-8">
+            <label className="mb-2 block text-[11px] font-extrabold uppercase tracking-[0.2em] text-white/50">
+              Passwort
+            </label>
             <input
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="mb-3 w-full rounded border border-[var(--color-border)] px-3 py-2 text-sm"
-              placeholder="Admin-Passwort eingeben"
+              className="w-full border-2 border-white/20 bg-white/10 px-4 py-3 text-sm font-semibold text-white placeholder-white/30 focus:border-[#1CB5E5] focus:outline-none"
+              placeholder="••••••••"
               autoFocus
             />
-            {error && <p className="mb-3 text-sm text-[var(--color-berlin-red)]">{error}</p>}
+            {error && (
+              <p className="mt-3 px-2 py-1 text-sm font-bold" style={{ backgroundColor: YELLOW, color: BLUE, display: 'inline-block' }}>
+                {error}
+              </p>
+            )}
             <button
               type="submit"
-              className="w-full rounded bg-[var(--color-berlin-red)] px-4 py-2 text-sm font-medium text-white hover:bg-[var(--color-berlin-red-dark)] transition-colors"
+              className="mt-5 w-full rounded-full px-4 py-3 text-sm font-extrabold uppercase tracking-[0.15em] transition-transform hover:scale-[1.02]"
+              style={{ backgroundColor: YELLOW, color: BLUE }}
             >
               Anmelden
             </button>
@@ -93,25 +114,25 @@ function AdminLayout() {
   }
 
   return (
-    <div>
-      <div className="border-b border-[var(--color-border)] bg-white px-4 py-3">
+    <div style={body} className="min-h-screen bg-[#F4F6FB]">
+      <div className="border-b border-black/5 bg-white px-5 py-2.5">
         <div className="mx-auto flex max-w-6xl items-center justify-between">
-          <span className="text-sm font-medium text-[var(--color-text-muted)]">Admin</span>
+          <span className="text-[11px] font-extrabold uppercase tracking-[0.2em] text-black/40">
+            Datenbank
+          </span>
           <div className="flex items-center gap-2">
-            {dbStatus && (
-              <span className="text-xs text-[var(--color-text-muted)]">{dbStatus}</span>
-            )}
+            {dbStatus && <span className="text-xs font-bold" style={{ color: CYAN }}>{dbStatus}</span>}
             <button
               onClick={handleExport}
-              className="rounded border border-[var(--color-border)] px-3 py-1.5 text-xs font-medium text-[var(--color-text-muted)] hover:bg-gray-50 transition-colors"
+              className="rounded-full border-2 border-[#0B2B6B] px-4 py-1 text-[11px] font-extrabold uppercase tracking-[0.1em] text-[#0B2B6B] transition-colors hover:bg-[#0B2B6B] hover:text-white"
             >
-              DB Export
+              Export
             </button>
             <button
               onClick={() => fileInputRef.current?.click()}
-              className="rounded border border-[var(--color-border)] px-3 py-1.5 text-xs font-medium text-[var(--color-text-muted)] hover:bg-gray-50 transition-colors"
+              className="rounded-full border-2 border-[#0B2B6B] px-4 py-1 text-[11px] font-extrabold uppercase tracking-[0.1em] text-[#0B2B6B] transition-colors hover:bg-[#0B2B6B] hover:text-white"
             >
-              DB Import
+              Import
             </button>
             <input
               ref={fileInputRef}

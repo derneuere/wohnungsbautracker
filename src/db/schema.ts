@@ -11,6 +11,11 @@ export const blockedProjects = sqliteTable('blocked_projects', {
   status: text().notNull(), // 'blockiert' | 'verzögert' | 'abgelehnt'
   date: text(),
   unitCount: int('unit_count'),
+  // Recherchierte Schätzung, strikt getrennt von bestätigten Zahlen (unit_count).
+  // 0 = belegt keine Wohnnutzung; NULL = unbekannt/nicht bezifferbar.
+  unitCountEstimate: int('unit_count_estimate'),
+  // JSON: { basis: 'dokumentiert'|'abgeleitet'|'keine_wohnnutzung', spanne: [min,max], quellen: [{url, zitat}], confidence, begruendung, verifiziert, stand }
+  unitCountEstimateMeta: text('unit_count_estimate_meta'),
   blockers: text(), // JSON array of {name, type} — type: "partei"|"bürgerinitiative"|"behörde"|"gericht"|"umwelt"|"investor"
   sourceUrl: text('source_url'),
   pressUrls: text('press_urls'), // JSON array of {title, url} objects

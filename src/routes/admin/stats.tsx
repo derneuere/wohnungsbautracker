@@ -1,10 +1,15 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { useState, useCallback } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { getStats, upsertStat } from '../../server/stats'
+import { fmt } from '../../lib/design-data'
+import { BLUE, CYAN, display } from '../../lib/campaign'
 
 export const Route = createFileRoute('/admin/stats')({
   component: StatsAdmin,
 })
+
+const cellInput =
+  'w-24 border-2 border-black/10 bg-white px-2 py-1 text-sm font-medium focus:border-[#1CB5E5] focus:outline-none'
 
 function StatsAdmin() {
   const [stats, setStats] = useState<any[]>([])
@@ -18,7 +23,9 @@ function StatsAdmin() {
     setLoading(false)
   }, [])
 
-  useState(() => { load() })
+  useEffect(() => {
+    load()
+  }, [load])
 
   const handleSave = async () => {
     if (editing) {
@@ -28,50 +35,71 @@ function StatsAdmin() {
     }
   }
 
-  if (loading) return <main className="mx-auto max-w-6xl px-4 py-6"><p className="text-sm text-[var(--color-text-muted)]">Laden...</p></main>
+  if (loading) {
+    return (
+      <main className="mx-auto max-w-6xl px-5 py-8">
+        <p className="text-sm font-bold uppercase tracking-[0.2em] text-black/30">Laden…</p>
+      </main>
+    )
+  }
+
+  const sorted = [...stats].sort((a, b) => b.year - a.year || a.bezirk.localeCompare(b.bezirk))
 
   return (
-    <main className="mx-auto max-w-6xl px-4 py-6">
-      <h2 className="mb-4 text-lg font-bold">Bau-Statistiken</h2>
+    <main className="mx-auto max-w-6xl px-5 py-8">
+      <div className="h-1.5 w-24" style={{ backgroundColor: CYAN }} />
+      <h1 className="mt-3" style={{ ...display, color: BLUE, fontSize: '1.7rem' }}>
+        Bau-Statistiken.
+      </h1>
+      <p className="mt-2 max-w-xl text-sm font-medium text-black/50">
+        Genehmigte und fertiggestellte Wohnungen je Bezirk und Jahr — Quelle: Amt für
+        Statistik Berlin-Brandenburg.
+      </p>
 
-      <div className="rounded border border-[var(--color-border)] bg-white">
+      <div className="mt-5 overflow-x-auto border-2 bg-white" style={{ borderColor: BLUE }}>
         <table className="w-full text-sm">
           <thead>
-            <tr className="border-b border-[var(--color-border)] bg-[var(--color-bg)]">
-              <th className="px-4 py-2 text-left font-medium text-[var(--color-text-muted)]">Bezirk</th>
-              <th className="px-4 py-2 text-left font-medium text-[var(--color-text-muted)]">Jahr</th>
-              <th className="px-4 py-2 text-left font-medium text-[var(--color-text-muted)]">Genehmigungen</th>
-              <th className="px-4 py-2 text-left font-medium text-[var(--color-text-muted)]">Fertigstellungen</th>
-              <th className="px-4 py-2 text-right font-medium text-[var(--color-text-muted)]">Aktionen</th>
+            <tr style={{ backgroundColor: BLUE }}>
+              <th className="px-4 py-2.5 text-left text-[10px] font-black uppercase tracking-[0.2em] text-white/80">Bezirk</th>
+              <th className="px-4 py-2.5 text-left text-[10px] font-black uppercase tracking-[0.2em] text-white/80">Jahr</th>
+              <th className="px-4 py-2.5 text-right text-[10px] font-black uppercase tracking-[0.2em] text-white/80">Genehmigt</th>
+              <th className="px-4 py-2.5 text-right text-[10px] font-black uppercase tracking-[0.2em] text-white/80">Fertiggestellt</th>
+              <th className="px-4 py-2.5 text-right text-[10px] font-black uppercase tracking-[0.2em] text-white/80">Aktionen</th>
             </tr>
           </thead>
           <tbody>
-            {stats.map((s) => (
-              <tr key={s.id} className="border-b border-[var(--color-border)] last:border-0">
-                <td className="px-4 py-2 font-medium">{s.bezirk}</td>
-                <td className="px-4 py-2">
+            {sorted.map((s) => (
+              <tr key={s.id} className="border-b border-black/5 last:border-0 hover:bg-[#F2FAFD]">
+                <td className="px-4 py-2.5 font-bold">{s.bezirk}</td>
+                <td className="px-4 py-2.5 tabular-nums font-medium">
                   {editing?.id === s.id ? (
-                    <input type="number" value={editing.year} onChange={(e) => setEditing({ ...editing, year: parseInt(e.target.value) })} className="w-20 rounded border border-[var(--color-border)] px-2 py-1 text-sm" />
+                    <input type="number" value={editing.year} onChange={(e) => setEditing({ ...editing, year: parseInt(e.target.value) })} className={cellInput} />
                   ) : s.year}
                 </td>
-                <td className="px-4 py-2">
+                <td className="px-4 py-2.5 text-right tabular-nums font-medium">
                   {editing?.id === s.id ? (
-                    <input type="number" value={editing.approvedCount} onChange={(e) => setEditing({ ...editing, approvedCount: parseInt(e.target.value) })} className="w-24 rounded border border-[var(--color-border)] px-2 py-1 text-sm" />
-                  ) : s.approvedCount.toLocaleString('de-DE')}
+                    <input type="number" value={editing.approvedCount} onChange={(e) => setEditing({ ...editing, approvedCount: parseInt(e.target.value) })} className={cellInput} />
+                  ) : fmt(s.approvedCount)}
                 </td>
-                <td className="px-4 py-2">
+                <td className="px-4 py-2.5 text-right tabular-nums font-medium">
                   {editing?.id === s.id ? (
-                    <input type="number" value={editing.completedCount} onChange={(e) => setEditing({ ...editing, completedCount: parseInt(e.target.value) })} className="w-24 rounded border border-[var(--color-border)] px-2 py-1 text-sm" />
-                  ) : s.completedCount.toLocaleString('de-DE')}
+                    <input type="number" value={editing.completedCount} onChange={(e) => setEditing({ ...editing, completedCount: parseInt(e.target.value) })} className={cellInput} />
+                  ) : fmt(s.completedCount)}
                 </td>
-                <td className="px-4 py-2 text-right">
+                <td className="whitespace-nowrap px-4 py-2.5 text-right">
                   {editing?.id === s.id ? (
                     <>
-                      <button onClick={handleSave} className="mr-2 text-xs text-green-600 hover:underline">Speichern</button>
-                      <button onClick={() => setEditing(null)} className="text-xs text-[var(--color-text-muted)] hover:underline">Abbrechen</button>
+                      <button onClick={handleSave} className="mr-3 text-xs font-extrabold uppercase tracking-wide hover:underline" style={{ color: CYAN }}>
+                        Speichern
+                      </button>
+                      <button onClick={() => setEditing(null)} className="text-xs font-extrabold uppercase tracking-wide text-black/40 hover:underline">
+                        Abbrechen
+                      </button>
                     </>
                   ) : (
-                    <button onClick={() => setEditing({ ...s })} className="text-xs text-blue-600 hover:underline">Bearbeiten</button>
+                    <button onClick={() => setEditing({ ...s })} className="text-xs font-extrabold uppercase tracking-wide hover:underline" style={{ color: BLUE }}>
+                      Bearbeiten
+                    </button>
                   )}
                 </td>
               </tr>

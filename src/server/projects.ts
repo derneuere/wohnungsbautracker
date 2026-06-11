@@ -17,7 +17,8 @@ export const createProject = createServerFn({ method: 'POST' }).handler(
     bezirk: string
     status: string
     date?: string
-    unitCount?: number
+    unitCount?: number | null
+    unitCountEstimate?: number | null
     blockers?: string
     sourceUrl?: string
     pressUrls?: string
@@ -46,7 +47,8 @@ export const updateProject = createServerFn({ method: 'POST' }).handler(
     bezirk: string
     status: string
     date?: string
-    unitCount?: number
+    unitCount?: number | null
+    unitCountEstimate?: number | null
     blockers?: string
     sourceUrl?: string
     pressUrls?: string

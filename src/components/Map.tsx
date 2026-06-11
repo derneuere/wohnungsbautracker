@@ -8,9 +8,10 @@ type Project = InferSelectModel<typeof blockedProjects>
 interface MapViewProps {
   projects: Project[]
   bezirkPartyMap: Record<string, string>
+  variant?: 'light' | 'dark'
 }
 
-export default function MapView({ projects, bezirkPartyMap }: MapViewProps) {
+export default function MapView({ projects, bezirkPartyMap, variant = 'light' }: MapViewProps) {
   const [selectedProject, setSelectedProject] = useState<Project | null>(null)
   const mapRef = useRef<HTMLDivElement>(null)
   const [mapInstance, setMapInstance] = useState<any>(null)
@@ -37,12 +38,14 @@ export default function MapView({ projects, bezirkPartyMap }: MapViewProps) {
         keyboard: false,
       }).setView([52.52, 13.405], 10)
 
-      lib.tileLayer('https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png', {
+      const tileStyle = variant === 'dark' ? 'dark' : 'light'
+
+      lib.tileLayer(`https://{s}.basemaps.cartocdn.com/${tileStyle}_nolabels/{z}/{x}/{y}{r}.png`, {
         attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> &copy; <a href="https://carto.com/">CARTO</a>',
         maxZoom: 19,
       }).addTo(map)
 
-      lib.tileLayer('https://{s}.basemaps.cartocdn.com/light_only_labels/{z}/{x}/{y}{r}.png', {
+      lib.tileLayer(`https://{s}.basemaps.cartocdn.com/${tileStyle}_only_labels/{z}/{x}/{y}{r}.png`, {
         maxZoom: 19,
         pane: 'overlayPane',
       }).addTo(map)
@@ -73,8 +76,8 @@ export default function MapView({ projects, bezirkPartyMap }: MapViewProps) {
             const color = party ? PARTY_COLORS[party] || '#999' : '#999'
             return {
               fillColor: color,
-              fillOpacity: 0.08,
-              color: '#888',
+              fillOpacity: variant === 'dark' ? 0.18 : 0.08,
+              color: variant === 'dark' ? '#64748B' : '#888',
               weight: 1.5,
               opacity: 0.5,
             }
