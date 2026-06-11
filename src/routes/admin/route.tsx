@@ -59,12 +59,20 @@ function AdminLayout() {
     setDbStatus('Importiere…')
     try {
       const buffer = await file.arrayBuffer()
-      const base64 = btoa(String.fromCharCode(...new Uint8Array(buffer)))
+      // Chunkweise kodieren: String.fromCharCode(...bytes) sprengt bei großen
+      // Dateien (>~100 KB) das Argument-Limit der Engine (RangeError).
+      const bytes = new Uint8Array(buffer)
+      const CHUNK = 0x8000
+      let binary = ''
+      for (let i = 0; i < bytes.length; i += CHUNK) {
+        binary += String.fromCharCode(...bytes.subarray(i, i + CHUNK))
+      }
+      const base64 = btoa(binary)
       const result = await importDb({ data: base64 })
       setDbStatus(`Import fertig (${(result.size / 1024).toFixed(0)} KB) — Seite wird neu geladen…`)
       setTimeout(() => window.location.reload(), 1000)
     } catch (err) {
-      setDbStatus('Import fehlgeschlagen')
+      setDbStatus(`Import fehlgeschlagen: ${err instanceof Error ? err.message : String(err)}`)
     }
     e.target.value = ''
   }
