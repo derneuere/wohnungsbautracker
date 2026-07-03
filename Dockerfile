@@ -5,8 +5,9 @@ COPY package.json bun.lock ./
 RUN bun install --frozen-lockfile
 
 COPY . .
+# Schema absichern; Daten kommen aus der versionierten sqlite.db (kein seed mehr,
+# sonst würden Platzhalter-Zeilen dupliziert / Unique-Constraints verletzt).
 RUN bunx drizzle-kit push
-RUN bun run src/db/seed.ts
 RUN bun run build
 
 # ---

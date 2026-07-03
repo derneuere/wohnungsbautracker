@@ -67,6 +67,15 @@ export function parseBlockers(p: TrackerProject): Blocker[] {
   }
 }
 
+/** Blocker-Typen, die nicht als „Akteure" angezeigt werden. Gerichte wenden nur
+ *  das Gesetz an — sie werden aus den Verhinderer-Listen und dem Ticker gefiltert. */
+export const HIDDEN_BLOCKER_TYPES = new Set(['gericht'])
+
+/** Blocker eines Projekts ohne die ausgeblendeten Typen (z.B. Gerichte). */
+export function visibleBlockers(p: TrackerProject): Blocker[] {
+  return parseBlockers(p).filter((b) => !HIDDEN_BLOCKER_TYPES.has(b.type))
+}
+
 export function parsePressUrls(p: TrackerProject): PressUrl[] {
   if (!p.pressUrls) return []
   try {
@@ -140,12 +149,14 @@ export function blockerTypeCounts(projects: TrackerProject[]): Array<{ type: str
     .sort((a, b) => b.count - a.count)
 }
 
-/** Unique non-party blocker names, most useful for tickers/lists. */
+/** Unique non-party blocker names, most useful for tickers/lists.
+ *  Ausgeblendete Typen (Gerichte) werden nicht aufgeführt. */
 export function uniqueBlockerNames(projects: TrackerProject[], excludeParties = true): string[] {
   const seen = new Set<string>()
   projects.forEach((p) => {
     parseBlockers(p).forEach((b) => {
       if (excludeParties && b.type === 'partei') return
+      if (HIDDEN_BLOCKER_TYPES.has(b.type)) return
       seen.add(b.name)
     })
   })
@@ -215,4 +226,40 @@ export function projectSlug(p: { id: number; title: string }): string {
 /** Liest die Projekt-ID aus einem Slug ("...-12" → 12). */
 export function idFromSlug(slug: string): number {
   return Number(slug.split('-').pop())
+}
+
+// ---------------------------------------------------------------------------
+// Kategorisierung nach Blockade-Ursache
+// ---------------------------------------------------------------------------
+// Ordnet jedes Projekt einer Hauptursache zu — abgeleitet aus den Blocker-Typen.
+// Zweck: filterbar machen, um zu zeigen, welcher Anteil administrativ/politisch
+// blockiert ist (Kernbotschaft) gegenüber Markt-/Insolvenzfällen, Umwelt usw.
+
+export type ProjectCategory = 'verwaltung' | 'buerger' | 'umwelt' | 'insolvenz' | 'sonstige'
+
+export const CATEGORY_ORDER: ProjectCategory[] = [
+  'verwaltung',
+  'insolvenz',
+  'umwelt',
+  'buerger',
+  'sonstige',
+]
+
+export const CATEGORY_META: Record<ProjectCategory, { label: string; kurz: string; color: string }> = {
+  verwaltung: { label: 'Verwaltung & Politik', kurz: 'Verwaltung', color: '#0B2B6B' },
+  insolvenz: { label: 'Insolvenz & Markt', kurz: 'Insolvenz', color: '#C08A00' },
+  umwelt: { label: 'Umwelt & Artenschutz', kurz: 'Umwelt', color: '#46962B' },
+  buerger: { label: 'Bürgerprotest', kurz: 'Bürger', color: '#1CB5E5' },
+  sonstige: { label: 'Sonstiges', kurz: 'Sonstiges', color: '#7A8699' },
+}
+
+/** Hauptursache der Blockade — Priorität: Insolvenz/Markt > Verwaltung/Politik >
+ *  Umwelt > Bürgerprotest > Sonstiges. Gerichte fließen bewusst nicht ein. */
+export function projectCategory(p: TrackerProject): ProjectCategory {
+  const types = new Set(parseBlockers(p).map((b) => b.type))
+  if (types.has('investor')) return 'insolvenz'
+  if (types.has('behörde') || types.has('partei')) return 'verwaltung'
+  if (types.has('umwelt')) return 'umwelt'
+  if (types.has('bürgerinitiative')) return 'buerger'
+  return 'sonstige'
 }

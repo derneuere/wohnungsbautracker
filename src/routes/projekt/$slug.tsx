@@ -7,11 +7,11 @@ import {
   countableUnits,
   fmt,
   idFromSlug,
-  parseBlockers,
   parseEstimateMeta,
   parsePressUrls,
   projectSlug,
   splitParties,
+  visibleBlockers,
 } from '../../lib/design-data'
 import BerlinSvgMap from '../../components/BerlinSvgMap'
 import WbtLogo from '../../components/WbtLogo'
@@ -110,7 +110,7 @@ function ProjectDetailPage() {
 
   const chip = STATUS_CHIP[p.status] || STATUS_CHIP.abgelehnt
   const parties = splitParties(p)
-  const blockers = parseBlockers(p)
+  const blockers = visibleBlockers(p)
   const pressUrls = parsePressUrls(p)
   const we = countableUnits(p)
 

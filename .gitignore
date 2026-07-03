@@ -16,5 +16,4 @@ todos.json
 data/raw/
 data/raw-*/
 
-# Database
-sqlite.db
+# Datenbank wird versioniert (dient als Deploy-Artefakt, siehe Dockerfile)
