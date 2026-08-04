@@ -1,8 +1,9 @@
 import { createServerFn } from '@tanstack/react-start'
 import { readFileSync, writeFileSync } from 'node:fs'
 import { resolve } from 'node:path'
+import { dbPath } from '../db/path'
 
-const DB_PATH = resolve('./sqlite.db')
+const DB_PATH = resolve(dbPath)
 
 export const exportDb = createServerFn({ method: 'GET' }).handler(async () => {
   const buffer = readFileSync(DB_PATH)
