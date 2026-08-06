@@ -1,9 +1,22 @@
 import { createServerFn } from '@tanstack/react-start'
 import { db } from '../db'
 import { blockedProjects } from '../db/schema'
-import { eq } from 'drizzle-orm'
+import { eq, or, isNull } from 'drizzle-orm'
 
+// Die öffentliche Liste: ohne die Projekte, bei denen die Recherche keine
+// politische oder verwaltungsseitige Ursache belegen konnte. Weil hier jede
+// Ansicht und jede Auswertung hängt, wirkt der Filter überall zugleich.
 export const getProjects = createServerFn({ method: 'GET' }).handler(async () => {
+  return db
+    .select()
+    .from(blockedProjects)
+    .where(or(eq(blockedProjects.hidden, false), isNull(blockedProjects.hidden)))
+    .all()
+})
+
+// Ungefiltert — nur für die Verwaltung, damit ausgeblendete Projekte dort
+// sichtbar und wieder einblendbar bleiben.
+export const getAllProjects = createServerFn({ method: 'GET' }).handler(async () => {
   return db.select().from(blockedProjects).all()
 })
 
@@ -23,6 +36,9 @@ export const createProject = createServerFn({ method: 'POST' }).handler(
     sourceUrl?: string
     pressUrls?: string
     imageUrl?: string
+    hidden?: boolean
+    politicalResponsibility?: string | null
+    politicalResponsibilityMeta?: string | null
   }}) => {
     const result = await db
       .insert(blockedProjects)
@@ -53,6 +69,9 @@ export const updateProject = createServerFn({ method: 'POST' }).handler(
     sourceUrl?: string
     pressUrls?: string
     imageUrl?: string
+    hidden?: boolean
+    politicalResponsibility?: string | null
+    politicalResponsibilityMeta?: string | null
   }}) => {
     const { id, ...rest } = data
     const result = await db

@@ -1,6 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { useState, useEffect, useCallback, useMemo } from 'react'
-import { getProjects, createProject, updateProject, deleteProject } from '../../server/projects'
+import { getAllProjects, createProject, updateProject, deleteProject } from '../../server/projects'
 import { BEZIRKE, PARTIES, STATUS_OPTIONS } from '../../lib/parties'
 import { fmt } from '../../lib/design-data'
 import { BLUE, CYAN, STATUS_CHIP, YELLOW, display } from '../../lib/campaign'
@@ -22,7 +22,7 @@ function ProjectsAdmin() {
 
   const loadProjects = useCallback(async () => {
     setLoading(true)
-    const data = await getProjects()
+    const data = await getAllProjects()
     setProjects(data)
     setLoading(false)
   }, [])
@@ -58,6 +58,7 @@ function ProjectsAdmin() {
     sourceUrl: '',
     pressUrls: '',
     imageUrl: '',
+    hidden: false,
   }
 
   const handleSave = async (data: any) => {
@@ -106,6 +107,12 @@ function ProjectsAdmin() {
           <h1 className="mt-3" style={{ ...display, color: BLUE, fontSize: '1.7rem' }}>
             {fmt(projects.length)} Projekte.
           </h1>
+          {projects.some((p) => p.hidden) && (
+            <p className="mt-1 text-xs font-bold uppercase tracking-[0.12em] text-black/40">
+              {fmt(projects.filter((p) => p.hidden).length)} davon ausgeblendet — öffentlich sichtbar sind{' '}
+              {fmt(projects.filter((p) => !p.hidden).length)}
+            </p>
+          )}
         </div>
         <div className="flex items-center gap-3">
           <input
@@ -140,8 +147,23 @@ function ProjectsAdmin() {
             {filtered.map((p) => {
               const chip = STATUS_CHIP[p.status] || STATUS_CHIP.abgelehnt
               return (
-                <tr key={p.id} className="border-b border-black/5 last:border-0 hover:bg-[#F2FAFD]">
-                  <td className="max-w-md px-4 py-2.5 font-bold">{p.title}</td>
+                <tr
+                  key={p.id}
+                  className="border-b border-black/5 last:border-0 hover:bg-[#F2FAFD]"
+                  style={p.hidden ? { backgroundColor: '#FAFAFA', color: '#9AA0B0' } : undefined}
+                >
+                  <td className="max-w-md px-4 py-2.5 font-bold">
+                    {p.hidden && (
+                      <span
+                        className="mr-2 px-1.5 py-0.5 text-[9px] font-black uppercase tracking-[0.1em]"
+                        style={{ backgroundColor: '#E4E6EE', color: '#5A6076' }}
+                        title="Keine politische oder verwaltungsseitige Ursache belegbar — nicht öffentlich sichtbar"
+                      >
+                        ausgeblendet
+                      </span>
+                    )}
+                    {p.title}
+                  </td>
                   <td className="whitespace-nowrap px-4 py-2.5 font-medium text-black/60">{p.bezirk}</td>
                   <td className="px-4 py-2.5 font-medium text-black/60">{p.party}</td>
                   <td className="whitespace-nowrap px-4 py-2.5 text-right font-bold tabular-nums">
@@ -160,6 +182,14 @@ function ProjectsAdmin() {
                     </span>
                   </td>
                   <td className="whitespace-nowrap px-4 py-2.5 text-right">
+                    <button
+                      onClick={() => handleSave({ ...sanitize(p), hidden: !p.hidden })}
+                      className="mr-3 text-xs font-extrabold uppercase tracking-wide hover:underline"
+                      style={{ color: p.hidden ? BLUE : '#5A6076' }}
+                      title={p.hidden ? 'Wieder öffentlich anzeigen' : 'Aus der öffentlichen Ansicht nehmen'}
+                    >
+                      {p.hidden ? 'Einblenden' : 'Ausblenden'}
+                    </button>
                     <button
                       onClick={() => setEditing(p)}
                       className="mr-3 text-xs font-extrabold uppercase tracking-wide hover:underline"
@@ -211,6 +241,7 @@ function sanitize(form: any) {
     sourceUrl: form.sourceUrl || '',
     pressUrls: form.pressUrls || '',
     imageUrl: form.imageUrl || '',
+    hidden: Boolean(form.hidden),
   }
 }
 
@@ -353,6 +384,23 @@ function ProjectForm({
         <div>
           <label className={labelCls}>Längengrad (Lng)</label>
           <input type="number" step="0.0001" value={form.lng} onChange={(e) => set('lng', parseFloat(e.target.value))} className={inputCls} />
+        </div>
+
+        <div className="sm:col-span-2">
+          <label className={labelCls}>Sichtbarkeit</label>
+          <label className="flex cursor-pointer items-center gap-2.5 border-2 border-black/10 bg-white px-3 py-2">
+            <input
+              type="checkbox"
+              checked={Boolean(form.hidden)}
+              onChange={(e) => set('hidden', e.target.checked)}
+              className="h-4 w-4 accent-[#0B2B6B]"
+            />
+            <span className="text-sm font-bold">Aus der öffentlichen Ansicht nehmen</span>
+          </label>
+          <p className="mt-1 text-[11px] font-medium text-black/40">
+            Für Vorhaben ohne belegbare politische oder verwaltungsseitige Ursache. Die Daten
+            bleiben erhalten, fallen aber aus Karte, Listen und allen Summen heraus.
+          </p>
         </div>
 
         <div>

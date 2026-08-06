@@ -17,6 +17,9 @@ export type TrackerProject = {
   sourceUrl: string | null
   pressUrls: string | null
   imageUrl: string | null
+  hidden?: boolean | null
+  politicalResponsibility?: string | null
+  politicalResponsibilityMeta?: string | null
 }
 
 export type EstimateMeta = {
@@ -48,6 +51,71 @@ export function estimatedUnits(projects: TrackerProject[]): number {
     if (parseEstimateMeta(p)?.doppelt_mit) return sum
     return sum + (p.unitCountEstimate || 0)
   }, 0)
+}
+
+/** Wie stark Politik oder Verwaltung an der Blockade beteiligt sind — Ergebnis
+ *  der Belegprüfung. Projekte mit 'keine' sind ausgeblendet (hidden). */
+export type PoliticalResponsibility = 'hauptursache' | 'mitursaechlich' | 'keine'
+
+/** Ein einzelner Beleg. `belegstaerke` trennt das Verbindliche vom Beiläufigen:
+ *  'stark' = Beschluss oder Verwaltungsakt, 'mittel' = Pressemitteilung oder
+ *  Zitat, 'schwach' = bloße Anfrage oder Einzelmeinung. */
+export type Beleg = {
+  akteur: string
+  typ: string
+  ebene?: string | null
+  datum?: string | null
+  art?: string | null
+  aussage: string
+  url: string
+  titel?: string | null
+  belegstaerke?: 'stark' | 'mittel' | 'schwach' | null
+  /** Wohin der Beleg zielt. 'unterstuetzt' heißt: Dieser Akteur will, dass gebaut
+   *  wird — solche Belege dürfen nicht als Nachweis einer Blockade gelesen werden. */
+  richtung?: 'blockiert' | 'unterstuetzt' | 'neutral' | null
+}
+
+export type ResponsibilityMeta = {
+  bewertung: PoliticalResponsibility | null
+  fazit: string | null
+  stand?: string
+  dublette_von?: number | null
+  funde: Beleg[]
+}
+
+export const RESPONSIBILITY_LABEL: Record<PoliticalResponsibility, string> = {
+  hauptursache: 'Politik/Verwaltung ist die Hauptursache',
+  mitursaechlich: 'Politik/Verwaltung ist mitursächlich',
+  keine: 'keine politische Ursache belegbar',
+}
+
+export function parseResponsibilityMeta(p: TrackerProject): ResponsibilityMeta | null {
+  if (!p.politicalResponsibilityMeta) return null
+  try {
+    const parsed = JSON.parse(p.politicalResponsibilityMeta)
+    return { ...parsed, funde: Array.isArray(parsed?.funde) ? parsed.funde : [] }
+  } catch {
+    return null
+  }
+}
+
+/** Belege eines Projekts. Zuerst die, die eine Blockade zeigen, dann nach Stärke —
+ *  Gegenpositionen stehen am Ende, damit sie nicht wie Blockade-Nachweise wirken. */
+export function belege(p: TrackerProject): Beleg[] {
+  const nachRichtung = { blockiert: 0, neutral: 1, unterstuetzt: 2 } as Record<string, number>
+  const nachStaerke = { stark: 0, mittel: 1, schwach: 2 } as Record<string, number>
+  return (parseResponsibilityMeta(p)?.funde ?? [])
+    .slice()
+    .sort(
+      (a, b) =>
+        (nachRichtung[a.richtung ?? 'blockiert'] ?? 1) - (nachRichtung[b.richtung ?? 'blockiert'] ?? 1) ||
+        (nachStaerke[a.belegstaerke ?? 'schwach'] ?? 3) - (nachStaerke[b.belegstaerke ?? 'schwach'] ?? 3),
+    )
+}
+
+/** Akteure, die sich belegbar FÜR das Vorhaben ausgesprochen haben. */
+export function befuerworter(p: TrackerProject): Beleg[] {
+  return belege(p).filter((f) => f.richtung === 'unterstuetzt')
 }
 
 export type Blocker = { name: string; type: string }

@@ -17,6 +17,13 @@ export const blockedProjects = sqliteTable('blocked_projects', {
   // JSON: { basis: 'dokumentiert'|'abgeleitet'|'keine_wohnnutzung', spanne: [min,max], quellen: [{url, zitat}], confidence, begruendung, verifiziert, stand }
   unitCountEstimateMeta: text('unit_count_estimate_meta'),
   blockers: text(), // JSON array of {name, type} — type: "partei"|"bürgerinitiative"|"behörde"|"gericht"|"umwelt"|"investor"
+  // Ausgeblendet statt gelöscht: Projekte, bei denen die Recherche keine politische
+  // oder verwaltungsseitige Ursache belegen konnte. Daten und Belege bleiben erhalten.
+  hidden: integer({ mode: 'boolean' }).default(false),
+  // 'hauptursache' | 'mitursaechlich' | 'keine' — Ergebnis der Belegprüfung
+  politicalResponsibility: text('political_responsibility'),
+  // JSON: { bewertung, fazit, stand, dublette_von, funde: [{akteur, typ, ebene, datum, art, aussage, url, titel, belegstaerke}] }
+  politicalResponsibilityMeta: text('political_responsibility_meta'),
   sourceUrl: text('source_url'),
   pressUrls: text('press_urls'), // JSON array of {title, url} objects
   imageUrl: text('image_url'),

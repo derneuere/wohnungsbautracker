@@ -4,16 +4,12 @@ import { getProjects } from '../server/projects'
 import { getStats } from '../server/stats'
 import { PARTY_COLORS } from '../lib/parties'
 import {
-  CATEGORY_META,
-  CATEGORY_ORDER,
-  type ProjectCategory,
   cityYearSeries,
   countableUnits,
   estimatedUnits,
   fmt,
   parseEstimateMeta,
   partyRanking,
-  projectCategory,
   projectSlug,
   statusBreakdown,
   totalUnits,
@@ -90,36 +86,7 @@ function KampagnePage() {
 
   const wall = useMemo(() => [...projects].sort((a, b) => (b.unitCount || 0) - (a.unitCount || 0)), [projects])
 
-  // Kategorie-Filter für die Projektwand — zeigt live, welchen Einfluss das Aus-
-  // blenden einzelner Blockade-Ursachen (z.B. Insolvenzen) auf die Bilanz hat.
-  const [activeCats, setActiveCats] = useState<Set<ProjectCategory>>(() => new Set(CATEGORY_ORDER))
-  const catStats = useMemo(() => {
-    const map = new Map<ProjectCategory, { n: number; units: number }>()
-    CATEGORY_ORDER.forEach((c) => map.set(c, { n: 0, units: 0 }))
-    projects.forEach((p) => {
-      const c = projectCategory(p)
-      const e = map.get(c)!
-      e.n += 1
-      e.units += countableUnits(p)
-    })
-    return map
-  }, [projects])
-  const filteredWall = useMemo(
-    () => wall.filter((p) => activeCats.has(projectCategory(p))),
-    [wall, activeCats],
-  )
-  const filteredUnits = useMemo(
-    () => filteredWall.reduce((s, p) => s + countableUnits(p), 0),
-    [filteredWall],
-  )
-  const toggleCat = (c: ProjectCategory) =>
-    setActiveCats((prev) => {
-      const next = new Set(prev)
-      if (next.has(c)) next.delete(c)
-      else next.add(c)
-      return next
-    })
-  const allActive = activeCats.size === CATEGORY_ORDER.length
+  const wallUnits = useMemo(() => wall.reduce((s, p) => s + countableUnits(p), 0), [wall])
 
   const slabColors = [
     { bg: BLACK, fg: YELLOW },
@@ -382,58 +349,24 @@ function KampagnePage() {
             <span style={{ color: YELLOW }}>Null Baukräne.</span>
           </h2>
 
-          {/* Kategorie-Filter */}
-          <p className="mt-8 text-[11px] font-extrabold uppercase tracking-[0.3em] text-white/40">
-            Nach Blockade-Ursache filtern
-          </p>
-          <div className="mt-3 flex flex-wrap gap-2.5">
-            {CATEGORY_ORDER.map((c) => {
-              const meta = CATEGORY_META[c]
-              const st = catStats.get(c)!
-              const on = activeCats.has(c)
-              return (
-                <button
-                  key={c}
-                  type="button"
-                  onClick={() => toggleCat(c)}
-                  aria-pressed={on}
-                  className="flex items-center gap-2 rounded-full border-2 px-4 py-2 text-[12px] font-extrabold uppercase tracking-[0.08em] transition-all"
-                  style={{
-                    backgroundColor: on ? meta.color : 'transparent',
-                    borderColor: on ? meta.color : 'rgba(255,255,255,0.18)',
-                    color: on ? '#fff' : 'rgba(255,255,255,0.55)',
-                  }}
-                >
-                  <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: on ? '#fff' : meta.color }} />
-                  {meta.kurz}
-                  <span className="tabular-nums opacity-70">{st.n}</span>
-                </button>
-              )
-            })}
-          </div>
-          <div className="mt-5 flex flex-wrap items-baseline gap-x-4 gap-y-1">
+          {/* Der Filter nach Blockade-Ursache ist ausgebaut: seine Einteilung stammte
+              allein aus den Blocker-Typen und stellte `investor` vor alles andere.
+              Dadurch liefen Vorhaben unter „Insolvenz", für die die Belegprüfung
+              politische Mitverursachung nachgewiesen hat. Er kehrt zurück, sobald
+              alle Projekte eine geprüfte `politicalResponsibility` haben — dann auf
+              dieser Achse statt auf den Blocker-Typen. */}
+          <div className="mt-6 flex flex-wrap items-baseline gap-x-4 gap-y-1">
             <span className="text-sm font-bold text-white">
-              Zeigt <span className="tabular-nums" style={{ color: YELLOW }}>{fmt(filteredWall.length)}</span> von{' '}
-              {fmt(projects.length)} Projekten
+              <span className="tabular-nums" style={{ color: YELLOW }}>{fmt(wall.length)}</span> Vorhaben
             </span>
             <span className="text-sm font-semibold text-white/60">
-              · <span className="tabular-nums" style={{ color: CYAN }}>{fmt(filteredUnits)}</span> Wohnungen betroffen
+              · <span className="tabular-nums" style={{ color: CYAN }}>{fmt(wallUnits)}</span> Wohnungen betroffen
             </span>
-            {!allActive && (
-              <button
-                type="button"
-                onClick={() => setActiveCats(new Set(CATEGORY_ORDER))}
-                className="text-[12px] font-extrabold uppercase tracking-[0.1em] text-white/50 underline underline-offset-2 hover:text-white"
-              >
-                Alle anzeigen
-              </button>
-            )}
           </div>
 
           <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            {filteredWall.map((p) => {
+            {wall.map((p) => {
               const chip = STATUS_CHIP[p.status] || STATUS_CHIP.abgelehnt
-              const cat = CATEGORY_META[projectCategory(p)]
               return (
                 <Link
                   key={p.id}
@@ -445,8 +378,7 @@ function KampagnePage() {
                     <span className="px-2.5 py-1 text-[11px] font-black tracking-[0.15em]" style={{ backgroundColor: chip.bg, color: chip.fg }}>
                       {chip.label}
                     </span>
-                    <span className="flex items-center gap-1.5 text-[11px] font-extrabold uppercase tracking-[0.15em] text-white/40">
-                      <span className="h-2 w-2 rounded-full" style={{ backgroundColor: cat.color }} title={cat.label} />
+                    <span className="text-[11px] font-extrabold uppercase tracking-[0.15em] text-white/40">
                       {p.bezirk}
                     </span>
                   </div>
@@ -488,9 +420,9 @@ function KampagnePage() {
             })}
           </div>
 
-          {filteredWall.length === 0 && (
+          {wall.length === 0 && (
             <p className="mt-10 text-center text-sm font-semibold text-white/50">
-              Keine Projekte in dieser Auswahl — mindestens eine Kategorie aktivieren.
+              Zurzeit sind keine Vorhaben erfasst.
             </p>
           )}
         </div>

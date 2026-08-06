@@ -4,11 +4,13 @@ import { getBvvParties } from '../../server/bvv'
 import { getStats } from '../../server/stats'
 import { PARTY_COLORS } from '../../lib/parties'
 import {
+  belege,
   countableUnits,
   fmt,
   idFromSlug,
   parseEstimateMeta,
   parsePressUrls,
+  parseResponsibilityMeta,
   projectSlug,
   splitParties,
   visibleBlockers,
@@ -287,6 +289,89 @@ function ProjectDetailPage() {
                       Verlässlichkeit: {meta.confidence}
                       {meta.verifiziert ? ' · unabhängig gegengeprüft' : ''}
                       {meta.stand ? ` · Stand ${meta.stand}` : ''}
+                    </p>
+                  </div>
+                )
+              })()}
+
+              {(() => {
+                const meta = parseResponsibilityMeta(p)
+                const funde = belege(p)
+                if (!meta && !funde.length) return null
+                const stark = funde.filter((f) => f.belegstaerke === 'stark').length
+                const pro = funde.filter((f) => f.richtung === 'unterstuetzt').length
+                return (
+                  <div className="mt-8 border-l-4 p-5" style={{ borderColor: BLUE, backgroundColor: '#F5F6FA' }}>
+                    <h3 className="text-xs font-black uppercase tracking-[0.2em]" style={{ color: BLUE }}>
+                      Wie belegt ist die Blockade?
+                    </h3>
+                    {meta?.fazit && (
+                      <p className="mt-2 text-sm font-medium leading-relaxed text-black/70">{meta.fazit}</p>
+                    )}
+                    {funde.length > 0 && (
+                      <ol className="mt-4 space-y-3">
+                        {funde.map((f, i) => (
+                          <li
+                            key={i}
+                            className="border-t pt-3 text-sm"
+                            style={{
+                              borderColor: '#D8DCE8',
+                              // Gegenpositionen gedämpft — sie belegen keine Blockade
+                              opacity: f.richtung === 'unterstuetzt' ? 0.75 : 1,
+                            }}
+                          >
+                            <div className="flex flex-wrap items-baseline gap-2">
+                              <span className="font-black text-black">{f.akteur}</span>
+                              {f.datum && <span className="text-black/40">{f.datum}</span>}
+                              {f.richtung === 'unterstuetzt' && (
+                                <span
+                                  className="px-1.5 py-0.5 text-[10px] font-black uppercase tracking-[0.1em]"
+                                  style={{ backgroundColor: '#2E7D32', color: '#fff' }}
+                                  title="Dieser Akteur fordert, dass gebaut wird — kein Beleg für eine Blockade"
+                                >
+                                  fordert Bau
+                                </span>
+                              )}
+                              {f.belegstaerke && (
+                                <span
+                                  className="px-1.5 py-0.5 text-[10px] font-black uppercase tracking-[0.1em]"
+                                  style={
+                                    f.belegstaerke === 'stark'
+                                      ? { backgroundColor: BLUE, color: '#fff' }
+                                      : f.belegstaerke === 'mittel'
+                                        ? { backgroundColor: CYAN, color: '#fff' }
+                                        : { backgroundColor: '#E4E6EE', color: '#5A6076' }
+                                  }
+                                  title={
+                                    f.belegstaerke === 'stark'
+                                      ? 'Beschluss oder Verwaltungsakt'
+                                      : f.belegstaerke === 'mittel'
+                                        ? 'Pressemitteilung oder Zitat'
+                                        : 'Anfrage oder Einzelmeinung'
+                                  }
+                                >
+                                  {f.belegstaerke}
+                                </span>
+                              )}
+                              {f.art && <span className="text-[11px] uppercase tracking-[0.1em] text-black/35">{f.art}</span>}
+                            </div>
+                            <p className="mt-1 leading-relaxed text-black/70">{f.aussage}</p>
+                            <a
+                              href={f.url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="mt-1 inline-block font-bold text-black underline decoration-[#1CB5E5] hover:opacity-70"
+                            >
+                              {f.titel || 'Quelle'} ↗
+                            </a>
+                          </li>
+                        ))}
+                      </ol>
+                    )}
+                    <p className="mt-4 text-[11px] font-bold uppercase tracking-[0.15em] text-black/40">
+                      {stark} von {funde.length} Belegen sind Beschlüsse oder Verwaltungsakte
+                      {pro > 0 ? ` · ${pro} Gegenposition${pro === 1 ? '' : 'en'} für den Bau` : ''}
+                      {meta?.stand ? ` · Stand ${meta.stand}` : ''}
                     </p>
                   </div>
                 )
