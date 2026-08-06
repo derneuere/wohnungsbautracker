@@ -39,6 +39,7 @@ export const createProject = createServerFn({ method: 'POST' }).handler(
     hidden?: boolean
     politicalResponsibility?: string | null
     politicalResponsibilityMeta?: string | null
+    resolution?: string | null
   }}) => {
     const result = await db
       .insert(blockedProjects)
@@ -72,6 +73,7 @@ export const updateProject = createServerFn({ method: 'POST' }).handler(
     hidden?: boolean
     politicalResponsibility?: string | null
     politicalResponsibilityMeta?: string | null
+    resolution?: string | null
   }}) => {
     const { id, ...rest } = data
     const result = await db

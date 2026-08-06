@@ -16,6 +16,7 @@ const SPALTEN: Array<{ tabelle: string; name: string; typ: string }> = [
   { tabelle: 'blocked_projects', name: 'hidden', typ: 'integer default 0' },
   { tabelle: 'blocked_projects', name: 'political_responsibility', typ: 'text' },
   { tabelle: 'blocked_projects', name: 'political_responsibility_meta', typ: 'text' },
+  { tabelle: 'blocked_projects', name: 'resolution', typ: 'text' },
 ]
 
 const db = new Database(DB_PATH)

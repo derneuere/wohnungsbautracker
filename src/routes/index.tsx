@@ -6,8 +6,10 @@ import { PARTY_COLORS } from '../lib/parties'
 import {
   cityYearSeries,
   countableUnits,
+  erledigteProjekte,
   estimatedUnits,
   fmt,
+  offeneProjekte,
   parseEstimateMeta,
   partyRanking,
   projectSlug,
@@ -15,6 +17,7 @@ import {
   totalUnits,
   uniqueBlockerNames,
 } from '../lib/design-data'
+import { GREEN, STATUS_CHIP } from '../lib/campaign'
 import BerlinSvgMap from '../components/BerlinSvgMap'
 import WbtLogo from '../components/WbtLogo'
 
@@ -48,11 +51,7 @@ const BLACK = '#111111'
 
 const display = { fontFamily: "'Archivo Black', 'Arial Black', sans-serif" }
 
-const STATUS_CHIP: Record<string, { bg: string; fg: string; label: string }> = {
-  blockiert: { bg: BLACK, fg: YELLOW, label: 'BLOCKIERT' },
-  'verzögert': { bg: CYAN, fg: '#fff', label: 'VERZÖGERT' },
-  abgelehnt: { bg: '#fff', fg: BLUE, label: 'ABGELEHNT' },
-}
+// STATUS_CHIP kommt aus lib/campaign — hier lag lange eine identische Kopie.
 
 function CountUp({ target }: { target: number }) {
   const [val, setVal] = useState(target)
@@ -76,22 +75,29 @@ function CountUp({ target }: { target: number }) {
 function KampagnePage() {
   const { projects, stats } = Route.useLoaderData()
 
+  // Fertiggestellte Vorhaben bleiben in der Projektwand, zählen aber nirgends mit,
+  // wo es um noch fehlende Wohnungen oder um laufende Blockaden geht.
+  const offen = useMemo(() => offeneProjekte(projects), [projects])
+  const fertig = useMemo(() => erledigteProjekte(projects), [projects])
+
   // Hauptzahl: belegte WE plus quellengeprüfte Schätzungen (dedupliziert)
-  const gesamt = totalUnits(projects) + estimatedUnits(projects)
+  const gesamt = totalUnits(offen) + estimatedUnits(offen)
   const byStatus = statusBreakdown(projects, true)
-  const ranking = useMemo(() => partyRanking(projects).slice(0, 6), [projects])
+  const ranking = useMemo(() => partyRanking(offen).slice(0, 6), [offen])
   const maxRank = ranking[0]?.units || 1
-  const blockerNames = useMemo(() => uniqueBlockerNames(projects).slice(0, 18), [projects])
+  const blockerNames = useMemo(() => uniqueBlockerNames(offen).slice(0, 18), [offen])
   const serie = useMemo(() => cityYearSeries(stats), [stats])
 
   const wall = useMemo(() => [...projects].sort((a, b) => (b.unitCount || 0) - (a.unitCount || 0)), [projects])
 
-  const wallUnits = useMemo(() => wall.reduce((s, p) => s + countableUnits(p), 0), [wall])
+  const wallUnits = useMemo(() => offen.reduce((s, p) => s + countableUnits(p), 0), [offen])
+  const fertigUnits = useMemo(() => fertig.reduce((s, p) => s + countableUnits(p), 0), [fertig])
 
   const slabColors = [
     { bg: BLACK, fg: YELLOW },
     { bg: CYAN, fg: '#fff' },
     { bg: YELLOW, fg: BLUE },
+    { bg: GREEN, fg: '#fff' },
   ]
 
   return (
@@ -171,17 +177,22 @@ function KampagnePage() {
           <CountUp target={gesamt} />
         </div>
         <p className="mx-auto mt-4 max-w-md text-sm font-semibold text-white/60">
-          aus {fmt(projects.length)} blockierten, verzögerten und abgelehnten Projekten
+          aus {fmt(offen.length)} blockierten, verzögerten und abgelehnten Projekten
         </p>
 
-        <div className="mx-auto mt-14 grid max-w-4xl gap-5 sm:grid-cols-3">
-          {byStatus.map((s, i) => (
-            <div key={s.status} className="px-6 py-8" style={{ backgroundColor: slabColors[i].bg, color: slabColors[i].fg }}>
-              <div style={{ ...display, fontSize: 'clamp(2.4rem, 5vw, 3.6rem)', lineHeight: 1 }}>{s.count}×</div>
-              <div className="mt-2 text-sm font-extrabold uppercase tracking-[0.2em]">{s.status}</div>
-              <div className="mt-1 text-xs font-bold opacity-70">{fmt(s.units)} Wohnungen</div>
-            </div>
-          ))}
+        <div className="mx-auto mt-14 grid max-w-4xl gap-5 sm:grid-cols-2 lg:grid-cols-4">
+          {byStatus.map((s, i) => {
+            const farbe = slabColors[i] ?? slabColors[slabColors.length - 1]
+            return (
+              <div key={s.status} className="px-6 py-8" style={{ backgroundColor: farbe.bg, color: farbe.fg }}>
+                <div style={{ ...display, fontSize: 'clamp(2.4rem, 5vw, 3.6rem)', lineHeight: 1 }}>{s.count}×</div>
+                <div className="mt-2 text-sm font-extrabold uppercase tracking-[0.2em]">
+                  {s.status === 'erledigt' ? 'endlich fertig' : s.status}
+                </div>
+                <div className="mt-1 text-xs font-bold opacity-70">{fmt(s.units)} Wohnungen</div>
+              </div>
+            )
+          })}
         </div>
 
         {serie.length > 1 && (
@@ -357,11 +368,17 @@ function KampagnePage() {
               dieser Achse statt auf den Blocker-Typen. */}
           <div className="mt-6 flex flex-wrap items-baseline gap-x-4 gap-y-1">
             <span className="text-sm font-bold text-white">
-              <span className="tabular-nums" style={{ color: YELLOW }}>{fmt(wall.length)}</span> Vorhaben
+              <span className="tabular-nums" style={{ color: YELLOW }}>{fmt(offen.length)}</span> offene Vorhaben
             </span>
             <span className="text-sm font-semibold text-white/60">
               · <span className="tabular-nums" style={{ color: CYAN }}>{fmt(wallUnits)}</span> Wohnungen betroffen
             </span>
+            {fertig.length > 0 && (
+              <span className="text-sm font-semibold text-white/60">
+                · <span className="tabular-nums" style={{ color: GREEN }}>{fmt(fertig.length)}</span> nach Jahren doch
+                fertig geworden ({fmt(fertigUnits)} Wohnungen)
+              </span>
+            )}
           </div>
 
           <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">

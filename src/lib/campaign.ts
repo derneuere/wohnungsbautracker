@@ -8,11 +8,22 @@ export const BLACK = '#111111'
 export const display = { fontFamily: "'Archivo Black', 'Arial Black', sans-serif" } as const
 export const body = { fontFamily: "'Archivo', 'Helvetica Neue', sans-serif" } as const
 
+export const GREEN = '#2E7D32'
+
+// Einzige Quelle für Status-Farbe und -Beschriftung. Startseite, Detailseite und
+// Admin importieren von hier — vorher lagen identische Kopien in drei Dateien.
 export const STATUS_CHIP: Record<string, { bg: string; fg: string; label: string }> = {
   blockiert: { bg: BLACK, fg: YELLOW, label: 'BLOCKIERT' },
   'verzögert': { bg: CYAN, fg: '#fff', label: 'VERZÖGERT' },
   abgelehnt: { bg: '#fff', fg: BLUE, label: 'ABGELEHNT' },
+  // Vorhaben, die nach jahrelanger Blockade doch fertig geworden sind. Sie bleiben
+  // im Tracker, weil der Verzug die eigentliche Aussage ist — sie zählen aber
+  // nicht mehr zu den blockierten Wohnungen.
+  erledigt: { bg: GREEN, fg: '#fff', label: 'ENDLICH FERTIG' },
 }
+
+/** Status, die noch offene Vorhaben bezeichnen — Grundlage aller Summen. */
+export const OFFENE_STATUS = ['blockiert', 'verzögert', 'abgelehnt']
 
 export const ARCHIVO_FONT_LINKS = [
   { rel: 'preconnect', href: 'https://fonts.googleapis.com' },

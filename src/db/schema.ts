@@ -8,7 +8,9 @@ export const blockedProjects = sqliteTable('blocked_projects', {
   lng: real().notNull(),
   party: text().notNull(),
   bezirk: text().notNull(),
-  status: text().notNull(), // 'blockiert' | 'verzögert' | 'abgelehnt'
+  status: text().notNull(), // 'blockiert' | 'verzögert' | 'abgelehnt' | 'erledigt'
+  // Bei 'erledigt': eine Zeile dazu, wie lange es gedauert hat und was fertig wurde.
+  resolution: text(),
   date: text(),
   unitCount: int('unit_count'),
   // Recherchierte Schätzung, strikt getrennt von bestätigten Zahlen (unit_count).

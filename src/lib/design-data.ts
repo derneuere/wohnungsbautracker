@@ -20,6 +20,8 @@ export type TrackerProject = {
   hidden?: boolean | null
   politicalResponsibility?: string | null
   politicalResponsibilityMeta?: string | null
+  /** Bei status 'erledigt': wie lange es gedauert hat und was am Ende herauskam. */
+  resolution?: string | null
 }
 
 export type EstimateMeta = {
@@ -118,6 +120,44 @@ export function befuerworter(p: TrackerProject): Beleg[] {
   return belege(p).filter((f) => f.richtung === 'unterstuetzt')
 }
 
+/** Ein Textstück: entweder Fließtext oder eine Fußnotenmarke. */
+export type TextTeil = { text: string } | { note: number }
+
+/** Zerlegt einen Projekttext an den [n]-Marken, damit sie als hochgestellte
+ *  Verweise gerendert werden können. Marken, für die es keinen Beleg gibt,
+ *  bleiben als normaler Text stehen statt ins Leere zu verweisen. */
+export function zerlegeMitFussnoten(text: string, anzahlBelege: number): TextTeil[] {
+  const teile: TextTeil[] = []
+  let rest = text
+  const marke = /\[(\d{1,2})\]/
+  for (;;) {
+    const m = rest.match(marke)
+    if (!m || m.index === undefined) break
+    const n = Number(m[1])
+    if (m.index > 0) teile.push({ text: rest.slice(0, m.index) })
+    if (n >= 1 && n <= anzahlBelege) teile.push({ note: n })
+    else teile.push({ text: m[0] })
+    rest = rest.slice(m.index + m[0].length)
+  }
+  if (rest) teile.push({ text: rest })
+  return teile
+}
+
+/** Quellen, die im Belegapparat noch nicht vorkommen — sie hängen unnummeriert
+ *  hinten an, damit kein Link doppelt erscheint. */
+export function weitereQuellen(p: TrackerProject): PressUrl[] {
+  const schon = new Set(belege(p).map((f) => (f.url ?? '').replace(/\/$/, '')))
+  const alle = [...parsePressUrls(p)]
+  if (p.sourceUrl) alle.unshift({ title: 'Drucksache', url: p.sourceUrl })
+  const gesehen = new Set<string>()
+  return alle.filter((q) => {
+    const u = (q.url ?? '').replace(/\/$/, '')
+    if (!u || schon.has(u) || gesehen.has(u)) return false
+    gesehen.add(u)
+    return true
+  })
+}
+
 export type Blocker = { name: string; type: string }
 export type PressUrl = { title: string; url: string }
 
@@ -158,6 +198,17 @@ export function totalUnits(projects: TrackerProject[]): number {
   return projects.reduce((sum, p) => sum + (p.unitCount || 0), 0)
 }
 
+/** Vorhaben, die noch offen sind. Fertiggestellte bleiben im Tracker sichtbar —
+ *  ihr Verzug ist die Aussage —, dürfen aber nicht zu den blockierten Wohnungen
+ *  gezählt oder einer Partei als laufende Blockade angelastet werden. */
+export function offeneProjekte(projects: TrackerProject[]): TrackerProject[] {
+  return projects.filter((p) => p.status !== 'erledigt')
+}
+
+export function erledigteProjekte(projects: TrackerProject[]): TrackerProject[] {
+  return projects.filter((p) => p.status === 'erledigt')
+}
+
 export type PartyRank = { party: string; projects: number; units: number }
 
 export function partyRanking(projects: TrackerProject[]): PartyRank[] {
@@ -195,7 +246,7 @@ export function countableUnits(p: TrackerProject): number {
 export type StatusBreakdown = { status: string; count: number; units: number }
 
 export function statusBreakdown(projects: TrackerProject[], includeEstimates = false): StatusBreakdown[] {
-  const order = ['blockiert', 'verzögert', 'abgelehnt']
+  const order = ['blockiert', 'verzögert', 'abgelehnt', 'erledigt']
   const map: Record<string, StatusBreakdown> = {}
   projects.forEach((p) => {
     if (!map[p.status]) map[p.status] = { status: p.status, count: 0, units: 0 }

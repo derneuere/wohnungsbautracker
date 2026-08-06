@@ -1,4 +1,4 @@
-import { Link, createFileRoute, notFound } from '@tanstack/react-router'
+﻿import { Link, createFileRoute, notFound } from '@tanstack/react-router'
 import { getProjects } from '../../server/projects'
 import { getBvvParties } from '../../server/bvv'
 import { getStats } from '../../server/stats'
@@ -9,14 +9,16 @@ import {
   fmt,
   idFromSlug,
   parseEstimateMeta,
-  parsePressUrls,
   parseResponsibilityMeta,
   projectSlug,
   splitParties,
   visibleBlockers,
+  weitereQuellen,
+  zerlegeMitFussnoten,
 } from '../../lib/design-data'
 import BerlinSvgMap from '../../components/BerlinSvgMap'
 import WbtLogo from '../../components/WbtLogo'
+import { GREEN, STATUS_CHIP } from '../../lib/campaign'
 
 const BLUE = '#0B2B6B'
 const DEEP = '#02173A'
@@ -26,11 +28,7 @@ const BLACK = '#111111'
 
 const display = { fontFamily: "'Archivo Black', 'Arial Black', sans-serif" }
 
-const STATUS_CHIP: Record<string, { bg: string; fg: string; label: string }> = {
-  blockiert: { bg: BLACK, fg: YELLOW, label: 'BLOCKIERT' },
-  'verzögert': { bg: CYAN, fg: '#fff', label: 'VERZÖGERT' },
-  abgelehnt: { bg: '#fff', fg: BLUE, label: 'ABGELEHNT' },
-}
+// STATUS_CHIP kommt aus lib/campaign — hier lag lange eine identische Kopie.
 
 const BLOCKER_TYPE_LABEL: Record<string, string> = {
   partei: 'Partei',
@@ -113,8 +111,15 @@ function ProjectDetailPage() {
   const chip = STATUS_CHIP[p.status] || STATUS_CHIP.abgelehnt
   const parties = splitParties(p)
   const blockers = visibleBlockers(p)
-  const pressUrls = parsePressUrls(p)
   const we = countableUnits(p)
+
+  // Belegapparat: die nummerierten Belege, auf die der Text verweist, plus die
+  // Quellen, die keinen eigenen Beleg darstellen. Beides steht jetzt in einer
+  // Liste — vorher lagen Quellen und Belege in zwei Abschnitten nebeneinander
+  // und zeigten teilweise auf dieselben Links.
+  const meta = parseResponsibilityMeta(p)
+  const funde = belege(p)
+  const quellen = weitereQuellen(p)
 
   return (
     <div className="min-h-screen bg-white" style={{ fontFamily: "'Archivo', 'Helvetica Neue', sans-serif" }}>
@@ -195,10 +200,43 @@ function ProjectDetailPage() {
         <div className="grid gap-10 lg:grid-cols-3">
           {/* Linke Spalte */}
           <div className="space-y-12 lg:col-span-2">
+            {p.status === 'erledigt' && p.resolution && (
+              <section className="border-l-4 p-5" style={{ borderColor: GREEN, backgroundColor: '#F1F8F1' }}>
+                <h2 style={{ ...display, color: GREEN, fontSize: '1.2rem' }}>Und dann ging es doch.</h2>
+                <p className="mt-2 text-base font-medium leading-relaxed text-black/80">{p.resolution}</p>
+              </section>
+            )}
+
             {p.description && (
               <section>
                 <h2 style={{ ...display, color: BLACK, fontSize: '1.5rem' }}>Worum es geht.</h2>
-                <p className="mt-4 text-base font-medium leading-relaxed text-black/80">{p.description}</p>
+                {/* Die Projekttexte sind mehrabsätzig — Leerzeilen bleiben Absätze,
+                    sonst liefe die ganze Chronologie als eine Textwand durch.
+                    Die [n]-Marken werden zu hochgestellten Verweisen auf den
+                    Belegapparat weiter unten. */}
+                {p.description.split(/\n\s*\n/).map((absatz, i) => (
+                  <p key={i} className="mt-4 text-base font-medium leading-relaxed text-black/80">
+                    {zerlegeMitFussnoten(absatz.trim(), funde.length).map((teil, j) =>
+                      'note' in teil ? (
+                        <a
+                          key={j}
+                          href={`#beleg-${teil.note}`}
+                          className="px-0.5 align-super text-[11px] font-black no-underline"
+                          style={{ color: BLUE }}
+                          title={
+                            funde[teil.note - 1]
+                              ? `${funde[teil.note - 1].akteur} — ${funde[teil.note - 1].aussage}`
+                              : undefined
+                          }
+                        >
+                          {teil.note}
+                        </a>
+                      ) : (
+                        <span key={j}>{teil.text}</span>
+                      ),
+                    )}
+                  </p>
+                ))}
               </section>
             )}
 
@@ -219,41 +257,116 @@ function ProjectDetailPage() {
             )}
 
             <section>
-              <h2 style={{ ...display, color: BLACK, fontSize: '1.5rem' }}>Quellen & Belege.</h2>
+              <h2 style={{ ...display, color: BLACK, fontSize: '1.5rem' }}>Belege.</h2>
               <p className="mt-3 text-sm font-medium leading-relaxed text-black/60">
-                Die Angaben stammen aus den Drucksachen der Bezirksverordnetenversammlung
-                und aus der Presseberichterstattung. Alles öffentlich, alles nachlesbar.
+                Die Ziffern im Text verweisen hierher. Jeder Beleg nennt Akteur, Datum und
+                Art des Vorgangs — und wie belastbar er ist: ein Beschluss oder Verwaltungsakt
+                wiegt schwerer als eine Pressemitteilung, diese schwerer als eine Anfrage.
               </p>
-              <div className="mt-5 flex flex-col items-start gap-3">
-                {p.sourceUrl && (
-                  <a
-                    href={p.sourceUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="rounded-full px-6 py-3 text-sm font-extrabold uppercase tracking-[0.12em] no-underline transition-transform hover:scale-105"
-                    style={{ backgroundColor: YELLOW, color: BLUE }}
-                  >
-                    Drucksache lesen →
-                  </a>
-                )}
-                {pressUrls.map((link, i) => (
-                  <a
-                    key={i}
-                    href={link.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="border-b-2 pb-0.5 text-sm font-bold text-black no-underline hover:opacity-70"
-                    style={{ borderColor: CYAN }}
-                  >
-                    {link.title} ↗
-                  </a>
-                ))}
-                {!p.sourceUrl && pressUrls.length === 0 && (
-                  <p className="text-sm font-semibold text-black/40">
-                    Für dieses Vorhaben sind noch keine Links hinterlegt.
-                  </p>
-                )}
-              </div>
+
+              {funde.length > 0 && (
+                <ol className="mt-5 space-y-4">
+                  {funde.map((f, i) => (
+                    <li
+                      key={i}
+                      id={`beleg-${i + 1}`}
+                      className="scroll-mt-24 border-t pt-3 text-sm"
+                      style={{
+                        borderColor: '#D8DCE8',
+                        opacity: f.richtung === 'unterstuetzt' ? 0.75 : 1,
+                      }}
+                    >
+                      <div className="flex flex-wrap items-baseline gap-2">
+                        <span className="font-black tabular-nums" style={{ color: BLUE }}>{i + 1}</span>
+                        <span className="font-black text-black">{f.akteur}</span>
+                        {f.datum && <span className="text-black/40">{f.datum}</span>}
+                        {f.belegstaerke && (
+                          <span
+                            className="px-1.5 py-0.5 text-[10px] font-black uppercase tracking-[0.1em]"
+                            style={
+                              f.belegstaerke === 'stark'
+                                ? { backgroundColor: BLUE, color: '#fff' }
+                                : f.belegstaerke === 'mittel'
+                                  ? { backgroundColor: CYAN, color: '#fff' }
+                                  : { backgroundColor: '#E4E6EE', color: '#5A6076' }
+                            }
+                            title={
+                              f.belegstaerke === 'stark'
+                                ? 'Beschluss oder Verwaltungsakt'
+                                : f.belegstaerke === 'mittel'
+                                  ? 'Pressemitteilung oder Zitat'
+                                  : 'Anfrage oder Einzelmeinung'
+                            }
+                          >
+                            {f.belegstaerke}
+                          </span>
+                        )}
+                        {f.richtung === 'unterstuetzt' && (
+                          <span
+                            className="px-1.5 py-0.5 text-[10px] font-black uppercase tracking-[0.1em]"
+                            style={{ backgroundColor: GREEN, color: '#fff' }}
+                            title="Dieser Akteur fordert, dass gebaut wird — kein Beleg für eine Blockade"
+                          >
+                            fordert Bau
+                          </span>
+                        )}
+                        {f.art && (
+                          <span className="text-[11px] uppercase tracking-[0.1em] text-black/35">{f.art}</span>
+                        )}
+                      </div>
+                      <p className="mt-1 leading-relaxed text-black/70">{f.aussage}</p>
+                      <a
+                        href={f.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="mt-1 inline-block font-bold text-black underline decoration-[#1CB5E5] hover:opacity-70"
+                      >
+                        {f.titel || 'Quelle'} ↗
+                      </a>
+                    </li>
+                  ))}
+                </ol>
+              )}
+
+              {quellen.length > 0 && (
+                <div className="mt-8">
+                  <h3 className="text-xs font-black uppercase tracking-[0.2em]" style={{ color: BLUE }}>
+                    Weitere Quellen
+                  </h3>
+                  <ul className="mt-3 space-y-2">
+                    {quellen.map((q, i) => (
+                      <li key={i} className="text-sm">
+                        <a
+                          href={q.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="font-bold text-black underline decoration-[#1CB5E5] hover:opacity-70"
+                        >
+                          {q.title} ↗
+                        </a>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              {funde.length === 0 && quellen.length === 0 && (
+                <p className="mt-5 text-sm font-semibold text-black/40">
+                  Für dieses Vorhaben sind noch keine Belege hinterlegt.
+                </p>
+              )}
+
+              {funde.length > 0 && (
+                <p className="mt-5 text-[11px] font-bold uppercase tracking-[0.15em] text-black/40">
+                  {funde.filter((f) => f.belegstaerke === 'stark').length} von {funde.length} Belegen sind
+                  Beschlüsse oder Verwaltungsakte
+                  {(() => {
+                    const pro = funde.filter((f) => f.richtung === 'unterstuetzt').length
+                    return pro ? ` · ${pro} Gegenposition${pro === 1 ? '' : 'en'} für den Bau` : ''
+                  })()}
+                  {meta?.stand ? ` · Stand ${meta.stand}` : ''}
+                </p>
+              )}
 
               {(() => {
                 const meta = parseEstimateMeta(p)
@@ -294,88 +407,6 @@ function ProjectDetailPage() {
                 )
               })()}
 
-              {(() => {
-                const meta = parseResponsibilityMeta(p)
-                const funde = belege(p)
-                if (!meta && !funde.length) return null
-                const stark = funde.filter((f) => f.belegstaerke === 'stark').length
-                const pro = funde.filter((f) => f.richtung === 'unterstuetzt').length
-                return (
-                  <div className="mt-8 border-l-4 p-5" style={{ borderColor: BLUE, backgroundColor: '#F5F6FA' }}>
-                    <h3 className="text-xs font-black uppercase tracking-[0.2em]" style={{ color: BLUE }}>
-                      Wie belegt ist die Blockade?
-                    </h3>
-                    {meta?.fazit && (
-                      <p className="mt-2 text-sm font-medium leading-relaxed text-black/70">{meta.fazit}</p>
-                    )}
-                    {funde.length > 0 && (
-                      <ol className="mt-4 space-y-3">
-                        {funde.map((f, i) => (
-                          <li
-                            key={i}
-                            className="border-t pt-3 text-sm"
-                            style={{
-                              borderColor: '#D8DCE8',
-                              // Gegenpositionen gedämpft — sie belegen keine Blockade
-                              opacity: f.richtung === 'unterstuetzt' ? 0.75 : 1,
-                            }}
-                          >
-                            <div className="flex flex-wrap items-baseline gap-2">
-                              <span className="font-black text-black">{f.akteur}</span>
-                              {f.datum && <span className="text-black/40">{f.datum}</span>}
-                              {f.richtung === 'unterstuetzt' && (
-                                <span
-                                  className="px-1.5 py-0.5 text-[10px] font-black uppercase tracking-[0.1em]"
-                                  style={{ backgroundColor: '#2E7D32', color: '#fff' }}
-                                  title="Dieser Akteur fordert, dass gebaut wird — kein Beleg für eine Blockade"
-                                >
-                                  fordert Bau
-                                </span>
-                              )}
-                              {f.belegstaerke && (
-                                <span
-                                  className="px-1.5 py-0.5 text-[10px] font-black uppercase tracking-[0.1em]"
-                                  style={
-                                    f.belegstaerke === 'stark'
-                                      ? { backgroundColor: BLUE, color: '#fff' }
-                                      : f.belegstaerke === 'mittel'
-                                        ? { backgroundColor: CYAN, color: '#fff' }
-                                        : { backgroundColor: '#E4E6EE', color: '#5A6076' }
-                                  }
-                                  title={
-                                    f.belegstaerke === 'stark'
-                                      ? 'Beschluss oder Verwaltungsakt'
-                                      : f.belegstaerke === 'mittel'
-                                        ? 'Pressemitteilung oder Zitat'
-                                        : 'Anfrage oder Einzelmeinung'
-                                  }
-                                >
-                                  {f.belegstaerke}
-                                </span>
-                              )}
-                              {f.art && <span className="text-[11px] uppercase tracking-[0.1em] text-black/35">{f.art}</span>}
-                            </div>
-                            <p className="mt-1 leading-relaxed text-black/70">{f.aussage}</p>
-                            <a
-                              href={f.url}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="mt-1 inline-block font-bold text-black underline decoration-[#1CB5E5] hover:opacity-70"
-                            >
-                              {f.titel || 'Quelle'} ↗
-                            </a>
-                          </li>
-                        ))}
-                      </ol>
-                    )}
-                    <p className="mt-4 text-[11px] font-bold uppercase tracking-[0.15em] text-black/40">
-                      {stark} von {funde.length} Belegen sind Beschlüsse oder Verwaltungsakte
-                      {pro > 0 ? ` · ${pro} Gegenposition${pro === 1 ? '' : 'en'} für den Bau` : ''}
-                      {meta?.stand ? ` · Stand ${meta.stand}` : ''}
-                    </p>
-                  </div>
-                )
-              })()}
             </section>
           </div>
 

@@ -35,4 +35,4 @@ export const BEZIRKE = [
   'Treptow-Köpenick',
 ] as const
 
-export const STATUS_OPTIONS = ['blockiert', 'verzögert', 'abgelehnt'] as const
+export const STATUS_OPTIONS = ['blockiert', 'verzögert', 'abgelehnt', 'erledigt'] as const
