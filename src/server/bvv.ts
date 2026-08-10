@@ -2,6 +2,7 @@ import { createServerFn } from '@tanstack/react-start'
 import { db } from '../db'
 import { bvvParties } from '../db/schema'
 import { eq } from 'drizzle-orm'
+import { requireAdmin } from './auth'
 
 export const getBvvParties = createServerFn({ method: 'GET' }).handler(async () => {
   return db.select().from(bvvParties).all()
@@ -14,6 +15,7 @@ export const updateBvvParty = createServerFn({ method: 'POST' }).handler(
     rulingParty: string
     coalitionParties?: string
   }}) => {
+    await requireAdmin()
     const { id, ...rest } = data
     const result = await db
       .update(bvvParties)

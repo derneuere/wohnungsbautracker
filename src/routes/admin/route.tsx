@@ -1,6 +1,6 @@
 import { createFileRoute, Outlet } from '@tanstack/react-router'
-import { useState, useRef } from 'react'
-import { checkPassword } from '../../server/auth'
+import { useState, useRef, useEffect } from 'react'
+import { checkPassword, isAdmin } from '../../server/auth'
 import { exportDb, importDb } from '../../server/db-transfer'
 import { ARCHIVO_FONT_LINKS, BLUE, CYAN, DEEP, YELLOW, body, display } from '../../lib/campaign'
 
@@ -18,6 +18,14 @@ function AdminLayout() {
   const [error, setError] = useState('')
   const [dbStatus, setDbStatus] = useState('')
   const fileInputRef = useRef<HTMLInputElement>(null)
+
+  // Die Anmeldung liegt jetzt in einem versiegelten Cookie, nicht mehr allein
+  // in diesem State — nach einem Reload also nachfragen statt aussperren.
+  useEffect(() => {
+    isAdmin()
+      .then((r) => setAuthed(r.admin))
+      .catch(() => {})
+  }, [])
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
