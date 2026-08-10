@@ -1,38 +1,10 @@
-import { createServerFn } from '@tanstack/react-start'
-import { useSession } from '@tanstack/react-start/server'
-import { timingSafeEqual } from 'node:crypto'
+import { createServerFn, createServerOnlyFn } from '@tanstack/react-start'
 
-const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'wohnungsbau2024'
-
-// Die Session wird als versiegeltes Cookie gespeichert; das Siegel braucht ein
-// Geheimnis von mindestens 32 Zeichen. Ohne eigenes SESSION_SECRET wird es aus
-// dem Adminpasswort abgeleitet — dann ist die Session nur so stark wie dieses.
-const SESSION_SECRET = (
-  process.env.SESSION_SECRET || `wbt-session::${ADMIN_PASSWORD}`
-).padEnd(32, '.')
-
-if (process.env.NODE_ENV === 'production') {
-  if (!process.env.ADMIN_PASSWORD)
-    console.warn('[auth] ADMIN_PASSWORD ist nicht gesetzt — es gilt das öffentlich bekannte Standardpasswort.')
-  if (!process.env.SESSION_SECRET)
-    console.warn('[auth] SESSION_SECRET ist nicht gesetzt — das Sessionsiegel wird aus ADMIN_PASSWORD abgeleitet.')
-}
-
-type AdminSession = { admin?: boolean }
-
-function adminSession() {
-  return useSession<AdminSession>({ name: 'wbt_admin', password: SESSION_SECRET })
-}
-
-// Vergleich in konstanter Zeit: ein `===` verrät über die Antwortzeit, wie
-// viele Zeichen am Anfang stimmen, und macht das Passwort zeichenweise ratbar.
-function passwortStimmt(eingabe: unknown): boolean {
-  if (typeof eingabe !== 'string') return false
-  const a = Buffer.from(eingabe)
-  const b = Buffer.from(ADMIN_PASSWORD)
-  if (a.length !== b.length) return false
-  return timingSafeEqual(a, b)
-}
+// Die Session selbst liegt in `admin-session.server.ts` und wird von hier nur
+// dynamisch aus `createServerOnlyFn`-Rümpfen geladen. Diese Datei hängt über
+// `/admin` im Client-Graphen; ein statischer Import von
+// `@tanstack/react-start/server` würde den Build brechen.
+const sitzung = createServerOnlyFn(() => import('./admin-session.server'))
 
 /**
  * Wache für alle schreibenden und alle nicht-öffentlichen Serverfunktionen.
@@ -44,15 +16,15 @@ function passwortStimmt(eingabe: unknown): boolean {
  * Anmeldung. Jede dieser Funktionen ruft jetzt zuerst hier herein.
  */
 export async function requireAdmin(): Promise<void> {
-  const session = await adminSession()
-  if (!session.data.admin) throw new Error('Nicht angemeldet')
+  const s = await sitzung()
+  await s.verlangeAdmin()
 }
 
 export const checkPassword = createServerFn({ method: 'POST' }).handler(
   async ({ data: password }: { data: string }) => {
-    if (!passwortStimmt(password)) return { valid: false }
-    const session = await adminSession()
-    await session.update({ admin: true })
+    const s = await sitzung()
+    if (!s.passwortStimmt(password)) return { valid: false }
+    await s.anmelden()
     return { valid: true }
   },
 )
@@ -60,12 +32,12 @@ export const checkPassword = createServerFn({ method: 'POST' }).handler(
 // Damit ein Reload die Anmeldung nicht verliert: das Cookie überlebt, der
 // React-State nicht.
 export const isAdmin = createServerFn({ method: 'GET' }).handler(async () => {
-  const session = await adminSession()
-  return { admin: session.data.admin === true }
+  const s = await sitzung()
+  return { admin: await s.istAngemeldet() }
 })
 
 export const logout = createServerFn({ method: 'POST' }).handler(async () => {
-  const session = await adminSession()
-  await session.clear()
+  const s = await sitzung()
+  await s.abmelden()
   return { success: true }
 })
