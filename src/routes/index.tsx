@@ -490,13 +490,6 @@ function KampagnePage() {
           </div>
         </div>
 
-        <Link
-          to="/designs"
-          className="mt-12 inline-block rounded-full px-8 py-3 text-sm font-extrabold uppercase tracking-[0.15em] no-underline transition-transform hover:scale-105"
-          style={{ backgroundColor: YELLOW, color: BLUE }}
-        >
-          Zu den Design-Entwürfen
-        </Link>
       </footer>
 
       <style>{`
