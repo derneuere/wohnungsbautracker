@@ -1,4 +1,4 @@
-// Shared derived-metric helpers for the /designs/* redesign routes.
+// Shared derived-metric helpers für Startseite, Projektseiten und Admin.
 
 export type TrackerProject = {
   id: number
@@ -223,18 +223,6 @@ export function partyRanking(projects: TrackerProject[]): PartyRank[] {
   return Object.values(map).sort((a, b) => b.units - a.units || b.projects - a.projects)
 }
 
-export type BezirkRank = { bezirk: string; projects: number; units: number }
-
-export function bezirkRanking(projects: TrackerProject[]): BezirkRank[] {
-  const map: Record<string, BezirkRank> = {}
-  projects.forEach((p) => {
-    if (!map[p.bezirk]) map[p.bezirk] = { bezirk: p.bezirk, projects: 0, units: 0 }
-    map[p.bezirk].projects += 1
-    map[p.bezirk].units += p.unitCount || 0
-  })
-  return Object.values(map).sort((a, b) => b.projects - a.projects || b.units - a.units)
-}
-
 /** Zählbare WE eines Projekts: belegte Zahl, sonst quellengeprüfte Schätzung.
  *  Doppelt erfasste Vorhaben (doppelt_mit) zählen 0, damit Summen nicht doppelt zählen. */
 export function countableUnits(p: TrackerProject): number {
@@ -261,18 +249,6 @@ export function statusBreakdown(projects: TrackerProject[], includeEstimates = f
     map[p.status].units += includeEstimates ? countableUnits(p) : p.unitCount || 0
   })
   return order.filter((s) => map[s]).map((s) => map[s])
-}
-
-export function blockerTypeCounts(projects: TrackerProject[]): Array<{ type: string; count: number }> {
-  const map: Record<string, number> = {}
-  projects.forEach((p) => {
-    parseBlockers(p).forEach((b) => {
-      map[b.type] = (map[b.type] || 0) + 1
-    })
-  })
-  return Object.entries(map)
-    .map(([type, count]) => ({ type, count }))
-    .sort((a, b) => b.count - a.count)
 }
 
 /** Unique non-party blocker names, most useful for tickers/lists.
@@ -326,12 +302,6 @@ export function cityYearSeries(stats: StatRow[]): YearTotals[] {
       completed: e.city ? e.city.completedCount : e.completed,
     }))
     .sort((a, b) => a.year - b.year)
-}
-
-/** Summen des neuesten Jahres — robust gegen historische Mehrjahres-Daten. */
-export function latestYearTotals(stats: StatRow[]): YearTotals {
-  const series = cityYearSeries(stats)
-  return series[series.length - 1] || { year: new Date().getFullYear(), approved: 0, completed: 0 }
 }
 
 /** SEO-Slug für Projekt-Detailseiten: kebab-case-Titel + ID, z.B. "wasserstadt-oberhavel-12". Die ID am Ende ist maßgeblich. */
