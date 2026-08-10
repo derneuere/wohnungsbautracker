@@ -2,6 +2,7 @@ import { createServerFn } from '@tanstack/react-start'
 import { db } from '../db'
 import { blockedProjects } from '../db/schema'
 import { eq, or, isNull } from 'drizzle-orm'
+import { requireAdmin } from './auth'
 
 // Die öffentliche Liste: ohne die Projekte, bei denen die Recherche keine
 // politische oder verwaltungsseitige Ursache belegen konnte. Weil hier jede
@@ -17,6 +18,7 @@ export const getProjects = createServerFn({ method: 'GET' }).handler(async () =>
 // Ungefiltert — nur für die Verwaltung, damit ausgeblendete Projekte dort
 // sichtbar und wieder einblendbar bleiben.
 export const getAllProjects = createServerFn({ method: 'GET' }).handler(async () => {
+  await requireAdmin()
   return db.select().from(blockedProjects).all()
 })
 
@@ -41,6 +43,7 @@ export const createProject = createServerFn({ method: 'POST' }).handler(
     politicalResponsibilityMeta?: string | null
     resolution?: string | null
   }}) => {
+    await requireAdmin()
     const result = await db
       .insert(blockedProjects)
       .values({
@@ -75,6 +78,7 @@ export const updateProject = createServerFn({ method: 'POST' }).handler(
     politicalResponsibilityMeta?: string | null
     resolution?: string | null
   }}) => {
+    await requireAdmin()
     const { id, ...rest } = data
     const result = await db
       .update(blockedProjects)
@@ -87,6 +91,7 @@ export const updateProject = createServerFn({ method: 'POST' }).handler(
 
 export const deleteProject = createServerFn({ method: 'POST' }).handler(
   async ({ data: id }: { data: number }) => {
+    await requireAdmin()
     await db.delete(blockedProjects).where(eq(blockedProjects.id, id))
     return { success: true }
   },

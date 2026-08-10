@@ -2,6 +2,7 @@ import { createServerFn } from '@tanstack/react-start'
 import { db } from '../db'
 import { constructionStats } from '../db/schema'
 import { eq } from 'drizzle-orm'
+import { requireAdmin } from './auth'
 
 export const getStats = createServerFn({ method: 'GET' }).handler(async () => {
   return db.select().from(constructionStats).all()
@@ -15,6 +16,7 @@ export const upsertStat = createServerFn({ method: 'POST' }).handler(
     approvedCount: number
     completedCount: number
   }}) => {
+    await requireAdmin()
     if (data.id) {
       const { id, ...rest } = data
       const result = await db
