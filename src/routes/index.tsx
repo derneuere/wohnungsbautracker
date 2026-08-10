@@ -13,6 +13,7 @@ import {
   parseEstimateMeta,
   partyRanking,
   projectSlug,
+  sortableUnits,
   statusBreakdown,
   totalUnits,
   uniqueBlockerNames,
@@ -88,7 +89,7 @@ function KampagnePage() {
   const blockerNames = useMemo(() => uniqueBlockerNames(offen).slice(0, 18), [offen])
   const serie = useMemo(() => cityYearSeries(stats), [stats])
 
-  const wall = useMemo(() => [...projects].sort((a, b) => (b.unitCount || 0) - (a.unitCount || 0)), [projects])
+  const wall = useMemo(() => [...projects].sort((a, b) => sortableUnits(b) - sortableUnits(a)), [projects])
 
   const wallUnits = useMemo(() => offen.reduce((s, p) => s + countableUnits(p), 0), [offen])
   const fertigUnits = useMemo(() => fertig.reduce((s, p) => s + countableUnits(p), 0), [fertig])

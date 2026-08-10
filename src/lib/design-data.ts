@@ -243,6 +243,13 @@ export function countableUnits(p: TrackerProject): number {
   return p.unitCountEstimate || 0
 }
 
+/** WE-Zahl für die Anzeige-Reihenfolge: belegte Zahl, sonst Schätzung — anders als
+ *  countableUnits auch bei doppelt erfassten Vorhaben, denn die Karte zeigt ihre
+ *  Zahl ja an und soll deshalb an der passenden Stelle einsortiert werden. */
+export function sortableUnits(p: TrackerProject): number {
+  return p.unitCount || p.unitCountEstimate || 0
+}
+
 export type StatusBreakdown = { status: string; count: number; units: number }
 
 export function statusBreakdown(projects: TrackerProject[], includeEstimates = false): StatusBreakdown[] {
