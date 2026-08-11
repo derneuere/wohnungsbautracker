@@ -3,6 +3,7 @@ import { getProjects } from '../../server/projects'
 import { getBvvParties } from '../../server/bvv'
 import { getStats } from '../../server/stats'
 import { PARTY_COLORS } from '../../lib/parties'
+import type { Belegdokument } from '../../lib/design-data'
 import {
   belege,
   countableUnits,
@@ -103,6 +104,65 @@ function ProjectNotFound() {
         Alle Projekte
       </Link>
     </div>
+  )
+}
+
+/** Die amtlichen Dokumente unter einem Beleg — eine Zeile je Drucksache.
+ *
+ *  Der Titel führt direkt aufs PDF, weil das das Dokument ist, um das es geht;
+ *  in ALLRIS ist das zugleich die einzige dauerhaft zitierfähige Adresse. Die
+ *  Beschlusslage steht in derselben Zeile, weil ein zurückgezogener Antrag
+ *  sonst wie ein durchgesetzter aussieht. */
+function Belegdokumente({ dokumente }: { dokumente: Belegdokument[] }) {
+  return (
+    <ul className="mt-1 space-y-1">
+      {dokumente.map((d, i) => (
+        <li key={i} className="leading-relaxed">
+          {/* Gleiche Optik wie der Quellenlink der übrigen Belege — die
+              Drucksache ist hier die Quelle, nicht ein Anhang dazu. */}
+          <a
+            href={d.pdf ?? d.quelle ?? undefined}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="font-bold text-black underline decoration-[#1CB5E5] hover:opacity-70"
+            title="PDF der Drucksache beim Herausgeber"
+          >
+            {d.nummer ? `${d.nummer} ${d.titel}` : d.titel} ↗
+          </a>
+          {(d.ergebnis || d.datum) && (
+            <span className="text-black/45"> · {[d.ergebnis, d.datum].filter(Boolean).join(', ')}</span>
+          )}
+          {d.quelle && (
+            <>
+              <span className="text-black/30"> · </span>
+              <a
+                href={d.quelle}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-black/45 underline decoration-black/20 hover:text-black/70"
+                title="Vorgangsseite mit vollständiger Beratungsfolge"
+              >
+                Vorgang
+              </a>
+            </>
+          )}
+          {d.archiv?.url && (
+            <>
+              <span className="text-black/30"> · </span>
+              <a
+                href={d.archiv.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-black/45 underline decoration-black/20 hover:text-black/70"
+                title={`Archivierte Fassung${d.archiv.stand ? ` vom ${d.archiv.stand}` : ''}`}
+              >
+                Archiv
+              </a>
+            </>
+          )}
+        </li>
+      ))}
+    </ul>
   )
 }
 
@@ -268,7 +328,10 @@ function ProjectDetailPage() {
                 Die Ziffern im Text verweisen hierher. Jeder Beleg nennt Akteur, Datum und
                 Art des Vorgangs. Wie belastbar die Belege insgesamt sind, steht unter der
                 Liste — ein Beschluss oder Verwaltungsakt wiegt schwerer als eine
-                Pressemitteilung, diese schwerer als eine Anfrage.
+                Pressemitteilung, diese schwerer als eine Anfrage. Steht ein
+                Parlamentsbeschluss dahinter, ist die Drucksache samt Beschlusslage
+                verlinkt; „Archiv" führt auf eine gespeicherte Fassung der Quelle, falls
+                das Original verschwindet.
               </p>
 
               {funde.length > 0 && (
@@ -306,14 +369,35 @@ function ProjectDetailPage() {
                         )}
                       </div>
                       <p className="mt-1 leading-relaxed text-black/70">{f.aussage}</p>
-                      <a
-                        href={f.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="mt-1 inline-block font-bold text-black underline decoration-[#1CB5E5] hover:opacity-70"
-                      >
-                        {f.titel || 'Quelle'} ↗
-                      </a>
+                      {/* Steht die Quelle des Belegs ohnehin als Drucksache in der
+                          Liste darunter, wäre dieser Link nur dieselbe Adresse ein
+                          zweites Mal. */}
+                      {!f.dokumente?.some((d) => d.quelle === f.url) && (
+                        <div className="mt-1 flex flex-wrap items-baseline gap-x-3 gap-y-1">
+                          <a
+                            href={f.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-block font-bold text-black underline decoration-[#1CB5E5] hover:opacity-70"
+                          >
+                            {f.titel || 'Quelle'} ↗
+                          </a>
+                          {f.archiv?.url && (
+                            <a
+                              href={f.archiv.url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-[11px] font-bold uppercase tracking-[0.1em] text-black/40 underline decoration-black/20 hover:text-black/70"
+                              title={`Archivierte Fassung${f.archiv.stand ? ` vom ${f.archiv.stand}` : ''} — falls das Original verschwindet`}
+                            >
+                              Archiv{f.archiv.stand ? ` ${f.archiv.stand}` : ''}
+                            </a>
+                          )}
+                        </div>
+                      )}
+                      {f.dokumente && f.dokumente.length > 0 && (
+                        <Belegdokumente dokumente={f.dokumente} />
+                      )}
                     </li>
                   ))}
                 </ol>

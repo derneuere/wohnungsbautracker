@@ -60,6 +60,36 @@ export function estimatedUnits(projects: TrackerProject[]): number {
  *  der Belegprüfung. Projekte mit 'keine' sind ausgeblendet (hidden). */
 export type PoliticalResponsibility = 'hauptursache' | 'mitursaechlich' | 'keine'
 
+/** Ein Snapshot der Quelle in einem Webarchiv. Quellen verschwinden: Fraktionen
+ *  räumen ihre Seiten auf, Ratsinformationssysteme werden migriert. Ohne Archiv
+ *  ist ein Beleg nur so lange gültig, wie der Herausgeber ihn stehen lässt. */
+export type Archiv = {
+  url: string
+  /** Datum des Snapshots (ISO), nicht des Abrufs. */
+  stand?: string | null
+}
+
+/** Ein amtliches Dokument hinter einem Beleg — bei der BVV eine Drucksache.
+ *
+ *  `pdf` zeigt direkt auf das PDF beim Herausgeber; in ALLRIS ist das
+ *  do027.asp?DOLFDNR=…&options=64, die einzige dauerhafte Dokumentadresse dort
+ *  (die Anlagen hängen an sessiongebundenen Wegwerf-URLs und taugen nicht zum
+ *  Zitieren). `ergebnis` nennt, was aus der Drucksache geworden ist — ein
+ *  zurückgezogener Antrag belegt einen Blockadeversuch, keine Blockade. */
+export type Belegdokument = {
+  /** Drucksachennummer, z. B. 'VIII-0299'. */
+  nummer?: string | null
+  titel: string
+  /** Beschlusslage im Wortlaut des Systems, z. B. 'in der BVV abgelehnt'. */
+  ergebnis?: string | null
+  datum?: string | null
+  /** Direktlink auf das PDF beim Herausgeber. */
+  pdf?: string | null
+  /** Die Vorgangsseite im Ratsinformationssystem, mit Beratungsfolge. */
+  quelle?: string | null
+  archiv?: Archiv | null
+}
+
 /** Ein einzelner Beleg. `belegstaerke` trennt das Verbindliche vom Beiläufigen:
  *  'stark' = Beschluss oder Verwaltungsakt, 'mittel' = Pressemitteilung oder
  *  Zitat, 'schwach' = bloße Anfrage oder Einzelmeinung. */
@@ -76,6 +106,11 @@ export type Beleg = {
   /** Wohin der Beleg zielt. 'unterstuetzt' heißt: Dieser Akteur will, dass gebaut
    *  wird — solche Belege dürfen nicht als Nachweis einer Blockade gelesen werden. */
   richtung?: 'blockiert' | 'unterstuetzt' | 'neutral' | null
+  /** Snapshot der unter `url` verlinkten Seite. */
+  archiv?: Archiv | null
+  /** Die amtlichen Dokumente, auf denen der Beleg beruht. Sie ersetzen die
+   *  Sammelverweise auf Suchmasken, die kein Mensch nachvollziehen kann. */
+  dokumente?: Belegdokument[] | null
 }
 
 export type ResponsibilityMeta = {
