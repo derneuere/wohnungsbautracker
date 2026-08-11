@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { PARTY_COLORS } from '../lib/parties'
+import { splitParties } from '../lib/design-data'
 import type { InferSelectModel } from 'drizzle-orm'
 import type { blockedProjects } from '../db/schema'
 
@@ -94,7 +95,7 @@ export default function MapView({ projects, bezirkPartyMap, variant = 'light' }:
     markersRef.current = []
 
     projects.forEach((project) => {
-      const firstParty = project.party.split(',')[0].trim()
+      const firstParty = splitParties(project)[0] ?? ''
       const marker = leaflet.circleMarker([project.lat, project.lng], {
         radius: 8,
         color: '#fff',
@@ -146,8 +147,8 @@ export default function MapView({ projects, bezirkPartyMap, variant = 'light' }:
 
           <div className="flex items-start gap-3">
             <div className="mt-0.5 flex flex-shrink-0 gap-0.5">
-              {selectedProject.party.split(',').map((party: string, i: number) => (
-                <span key={i} className="inline-block h-4 w-4 rounded-full" style={{ backgroundColor: PARTY_COLORS[party.trim()] || '#999' }} />
+              {splitParties(selectedProject).map((party: string, i: number) => (
+                <span key={i} className="inline-block h-4 w-4 rounded-full" style={{ backgroundColor: PARTY_COLORS[party] || '#999' }} />
               ))}
             </div>
             <div className="min-w-0 flex-1 pr-4">
@@ -163,7 +164,7 @@ export default function MapView({ projects, bezirkPartyMap, variant = 'light' }:
                   {selectedProject.status.charAt(0).toUpperCase() + selectedProject.status.slice(1)}
                 </span>
                 <span className="text-xs text-[var(--color-text-muted)]">
-                  {selectedProject.party.split(',').join(', ')} &middot; {selectedProject.bezirk}
+                  {splitParties(selectedProject).join(', ')} &middot; {selectedProject.bezirk}
                   {selectedProject.date && <> &middot; {selectedProject.date}</>}
                 </span>
               </div>

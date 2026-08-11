@@ -1,8 +1,8 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { useState, useEffect, useCallback, useMemo } from 'react'
 import { getAllProjects, createProject, updateProject, deleteProject } from '../../server/projects'
-import { BEZIRKE, PARTIES, STATUS_OPTIONS } from '../../lib/parties'
-import { fmt } from '../../lib/design-data'
+import { BEZIRKE, STATUS_OPTIONS } from '../../lib/parties'
+import { fmt, splitParties } from '../../lib/design-data'
 import { BLUE, CYAN, STATUS_CHIP, YELLOW, display } from '../../lib/campaign'
 
 export const Route = createFileRoute('/admin/')({
@@ -38,7 +38,7 @@ function ProjectsAdmin() {
       (p) =>
         p.title.toLowerCase().includes(f) ||
         p.bezirk.toLowerCase().includes(f) ||
-        p.party.toLowerCase().includes(f) ||
+        splitParties(p).join(',').toLowerCase().includes(f) ||
         p.status.includes(f),
     )
   }, [projects, filter])
@@ -48,7 +48,6 @@ function ProjectsAdmin() {
     description: '',
     lat: 52.52,
     lng: 13.405,
-    party: '',
     bezirk: BEZIRKE[0],
     status: 'blockiert',
     date: '',
@@ -165,7 +164,7 @@ function ProjectsAdmin() {
                     {p.title}
                   </td>
                   <td className="whitespace-nowrap px-4 py-2.5 font-medium text-black/60">{p.bezirk}</td>
-                  <td className="px-4 py-2.5 font-medium text-black/60">{p.party}</td>
+                  <td className="px-4 py-2.5 font-medium text-black/60">{splitParties(p).join(', ') || '—'}</td>
                   <td className="whitespace-nowrap px-4 py-2.5 text-right font-bold tabular-nums">
                     {p.unitCount ? fmt(p.unitCount) : p.unitCountEstimate ? (
                       <span style={{ color: CYAN }}>~{fmt(p.unitCountEstimate)}</span>
@@ -231,7 +230,6 @@ function sanitize(form: any) {
     description: form.description || '',
     lat: Number(form.lat) || 52.52,
     lng: Number(form.lng) || 13.405,
-    party: (form.party || '').split(',').map((s: string) => s.trim()).filter(Boolean).join(','),
     bezirk: form.bezirk,
     status: form.status,
     date: form.date || '',
@@ -265,17 +263,6 @@ function ProjectForm({
 }) {
   const [form, setForm] = useState(initial)
   const set = (key: string, value: any) => setForm((f: any) => ({ ...f, [key]: value }))
-
-  const selectedParties = useMemo(
-    () => new Set((form.party || '').split(',').map((s: string) => s.trim()).filter(Boolean)),
-    [form.party],
-  )
-  const toggleParty = (party: string) => {
-    const next = new Set(selectedParties)
-    if (next.has(party)) next.delete(party)
-    else next.add(party)
-    set('party', [...next].join(','))
-  }
 
   const blockersValid = jsonOk(form.blockers || '')
   const pressValid = jsonOk(form.pressUrls || '')
@@ -327,30 +314,6 @@ function ProjectForm({
           <select value={form.bezirk} onChange={(e) => set('bezirk', e.target.value)} className={inputCls}>
             {BEZIRKE.map((b) => <option key={b} value={b}>{b}</option>)}
           </select>
-        </div>
-
-        <div className="sm:col-span-2">
-          <label className={labelCls}>Beteiligte Parteien (Mehrfachauswahl)</label>
-          <div className="flex flex-wrap gap-2">
-            {PARTIES.map((p) => {
-              const active = selectedParties.has(p)
-              return (
-                <button
-                  key={p}
-                  type="button"
-                  onClick={() => toggleParty(p)}
-                  className="rounded-full border-2 px-3.5 py-1 text-xs font-extrabold transition-colors"
-                  style={
-                    active
-                      ? { backgroundColor: BLUE, borderColor: BLUE, color: '#fff' }
-                      : { borderColor: 'rgba(0,0,0,0.15)', color: 'rgba(0,0,0,0.55)' }
-                  }
-                >
-                  {p}
-                </button>
-              )
-            })}
-          </div>
         </div>
 
         <div>
@@ -422,7 +385,7 @@ function ProjectForm({
             onChange={(e) => set('blockers', e.target.value)}
             rows={2}
             className={`${inputCls} font-mono text-xs ${blockersValid ? '' : 'border-red-500'}`}
-            placeholder='[{"name":"BI Beispielkiez","type":"bürgerinitiative"}] — Typen: partei, bürgerinitiative, behörde, gericht, umwelt, investor'
+            placeholder='[{"name":"BI Beispielkiez","type":"bürgerinitiative"},{"name":"Bezirksamt X","type":"behörde","partei":"CDU"}] — Typen: partei, bürgerinitiative, behörde, gericht, umwelt, investor. Die Partei-Bilanz zählt partei-Blocker plus partei-Tags.'
           />
         </div>
         <div className="sm:col-span-2">

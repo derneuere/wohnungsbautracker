@@ -8,6 +8,7 @@ import {
   countableUnits,
   fmt,
   idFromSlug,
+  kanonischeParteien,
   parseEstimateMeta,
   parseResponsibilityMeta,
   projectSlug,
@@ -245,8 +246,13 @@ function ProjectDetailPage() {
                 <h2 style={{ ...display, color: BLACK, fontSize: '1.5rem' }}>Wer im Weg steht.</h2>
                 <ul className="mt-5 space-y-3">
                   {blockers.map((b, i) => (
-                    <li key={i} className="flex items-center gap-3 border-l-4 py-1 pl-4" style={{ borderColor: b.type === 'partei' ? PARTY_COLORS[b.name] || BLUE : CYAN }}>
-                      <span className="text-base font-bold text-black">{b.name}</span>
+                    <li key={i} className="flex items-center gap-3 border-l-4 py-1 pl-4" style={{ borderColor: b.type === 'partei' ? PARTY_COLORS[kanonischeParteien(b.name)[0] ?? ''] || BLUE : CYAN }}>
+                      <span className="text-base font-bold text-black">
+                        {b.name}
+                        {b.partei ? (
+                          <span className="font-semibold text-black/50"> ({b.partei.split(',').join('/')}-geführt)</span>
+                        ) : null}
+                      </span>
                       <span className="px-2 py-0.5 text-[10px] font-black uppercase tracking-[0.15em] text-white" style={{ backgroundColor: BLUE }}>
                         {BLOCKER_TYPE_LABEL[b.type] || b.type}
                       </span>

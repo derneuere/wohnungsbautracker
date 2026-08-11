@@ -6,7 +6,8 @@ export type TrackerProject = {
   description: string | null
   lat: number
   lng: number
-  party: string
+  /** @deprecated Tote Spalte — Parteien kommen aus splitParties (blockers). */
+  party?: string | null
   bezirk: string
   status: string
   date: string | null
@@ -101,18 +102,13 @@ export function parseResponsibilityMeta(p: TrackerProject): ResponsibilityMeta |
   }
 }
 
-/** Belege eines Projekts. Zuerst die, die eine Blockade zeigen, dann nach Stärke —
- *  Gegenpositionen stehen am Ende, damit sie nicht wie Blockade-Nachweise wirken. */
+/** Belege eines Projekts — in der gespeicherten Reihenfolge. Die ist maßgeblich,
+ *  weil die [n]-Marken im Projekttext genau darauf zeigen: Position i im Array
+ *  ist Fußnote i+1. Früher wurde hier nach Richtung und Stärke umsortiert, was
+ *  die Nummerierung gegenüber dem Text verschob. Gegenpositionen sind jetzt am
+ *  Badge „fordert Bau" erkennbar statt an ihrer Position. */
 export function belege(p: TrackerProject): Beleg[] {
-  const nachRichtung = { blockiert: 0, neutral: 1, unterstuetzt: 2 } as Record<string, number>
-  const nachStaerke = { stark: 0, mittel: 1, schwach: 2 } as Record<string, number>
-  return (parseResponsibilityMeta(p)?.funde ?? [])
-    .slice()
-    .sort(
-      (a, b) =>
-        (nachRichtung[a.richtung ?? 'blockiert'] ?? 1) - (nachRichtung[b.richtung ?? 'blockiert'] ?? 1) ||
-        (nachStaerke[a.belegstaerke ?? 'schwach'] ?? 3) - (nachStaerke[b.belegstaerke ?? 'schwach'] ?? 3),
-    )
+  return parseResponsibilityMeta(p)?.funde ?? []
 }
 
 /** Akteure, die sich belegbar FÜR das Vorhaben ausgesprochen haben. */
@@ -158,11 +154,41 @@ export function weitereQuellen(p: TrackerProject): PressUrl[] {
   })
 }
 
-export type Blocker = { name: string; type: string }
+/** `partei` an Nicht-Partei-Blockern: belegte Parteiführung des Akteurs
+ *  (z.B. Bezirksamt unter CDU-Stadtrat), ggf. kommagetrennt („CDU,SPD"). */
+export type Blocker = { name: string; type: string; partei?: string | null }
 export type PressUrl = { title: string; url: string }
 
+const PARTEI_MUSTER: Array<[RegExp, string]> = [
+  [/grün/i, 'Grüne'],
+  [/link/i, 'Linke'],
+  [/spd/i, 'SPD'],
+  [/cdu/i, 'CDU'],
+  [/fdp/i, 'FDP'],
+  [/bsw/i, 'BSW'],
+  [/afd/i, 'AfD'],
+]
+
+/** Alle kanonischen Parteien, die in einem Text vorkommen — Blocker-Namen
+ *  dürfen Fraktions- und Gremienzusätze tragen („Linksfraktion BVV Pankow"),
+ *  und ein gemeinsamer Beschluss („BVV-Mehrheit CDU und Grüne") zählt für beide. */
+export function kanonischeParteien(text: string): string[] {
+  return PARTEI_MUSTER.filter(([muster]) => muster.test(text)).map(([, partei]) => partei)
+}
+
+/** Parteien eines Projekts, abgeleitet aus den sichtbaren Blockern: aus den
+ *  Namen der partei-Blocker plus den partei-Tags der übrigen Blocker. Die
+ *  party-Spalte wird bewusst nicht mehr gelesen — jede Partei in der Bilanz
+ *  hat damit einen anzeigbaren Blocker auf der Projektseite. */
 export function splitParties(p: TrackerProject): string[] {
-  return p.party.split(',').map((s) => s.trim()).filter(Boolean)
+  const parteien: string[] = []
+  visibleBlockers(p).forEach((b) => {
+    const quelle = b.type === 'partei' ? b.name : b.partei ?? ''
+    kanonischeParteien(quelle).forEach((partei) => {
+      if (!parteien.includes(partei)) parteien.push(partei)
+    })
+  })
+  return parteien
 }
 
 export function parseBlockers(p: TrackerProject): Blocker[] {

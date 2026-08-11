@@ -28,7 +28,8 @@ export const createProject = createServerFn({ method: 'POST' }).handler(
     description?: string
     lat: number
     lng: number
-    party: string
+    /** @deprecated Tote Spalte — Parteien werden aus blockers abgeleitet. */
+    party?: string
     bezirk: string
     status: string
     date?: string
@@ -48,6 +49,7 @@ export const createProject = createServerFn({ method: 'POST' }).handler(
       .insert(blockedProjects)
       .values({
         ...data,
+        party: data.party ?? '',
         createdAt: new Date(),
         updatedAt: new Date(),
       })
@@ -63,7 +65,8 @@ export const updateProject = createServerFn({ method: 'POST' }).handler(
     description?: string
     lat: number
     lng: number
-    party: string
+    /** @deprecated Tote Spalte — Parteien werden aus blockers abgeleitet. */
+    party?: string
     bezirk: string
     status: string
     date?: string

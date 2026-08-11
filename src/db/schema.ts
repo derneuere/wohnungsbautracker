@@ -6,6 +6,8 @@ export const blockedProjects = sqliteTable('blocked_projects', {
   description: text(),
   lat: real().notNull(),
   lng: real().notNull(),
+  // DEPRECATED: tote Spalte. Die Partei-Bilanz wird aus `blockers` abgeleitet
+  // (splitParties in lib/design-data.ts) — partei-Blocker plus partei-Tags.
   party: text().notNull(),
   bezirk: text().notNull(),
   status: text().notNull(), // 'blockiert' | 'verzögert' | 'abgelehnt' | 'erledigt'
