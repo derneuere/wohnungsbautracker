@@ -266,8 +266,9 @@ function ProjectDetailPage() {
               <h2 style={{ ...display, color: BLACK, fontSize: '1.5rem' }}>Belege.</h2>
               <p className="mt-3 text-sm font-medium leading-relaxed text-black/60">
                 Die Ziffern im Text verweisen hierher. Jeder Beleg nennt Akteur, Datum und
-                Art des Vorgangs — und wie belastbar er ist: ein Beschluss oder Verwaltungsakt
-                wiegt schwerer als eine Pressemitteilung, diese schwerer als eine Anfrage.
+                Art des Vorgangs. Wie belastbar die Belege insgesamt sind, steht unter der
+                Liste — ein Beschluss oder Verwaltungsakt wiegt schwerer als eine
+                Pressemitteilung, diese schwerer als eine Anfrage.
               </p>
 
               {funde.length > 0 && (
@@ -286,31 +287,15 @@ function ProjectDetailPage() {
                         <span className="font-black tabular-nums" style={{ color: BLUE }}>{i + 1}</span>
                         <span className="font-black text-black">{f.akteur}</span>
                         {f.datum && <span className="text-black/40">{f.datum}</span>}
-                        {f.belegstaerke && (
-                          <span
-                            className="px-1.5 py-0.5 text-[10px] font-black uppercase tracking-[0.1em]"
-                            style={
-                              f.belegstaerke === 'stark'
-                                ? { backgroundColor: BLUE, color: '#fff' }
-                                : f.belegstaerke === 'mittel'
-                                  ? { backgroundColor: CYAN, color: '#fff' }
-                                  : { backgroundColor: '#E4E6EE', color: '#5A6076' }
-                            }
-                            title={
-                              f.belegstaerke === 'stark'
-                                ? 'Beschluss oder Verwaltungsakt'
-                                : f.belegstaerke === 'mittel'
-                                  ? 'Pressemitteilung oder Zitat'
-                                  : 'Anfrage oder Einzelmeinung'
-                            }
-                          >
-                            {f.belegstaerke}
-                          </span>
-                        )}
+                        {/* Keine farbigen Badges mehr — die Belegstärke stand als
+                            Chip neben jedem Eintrag und hat die Liste optisch
+                            zerrissen. Sie steckt jetzt nur noch in der Bilanzzeile
+                            unter der Liste. Erhalten bleibt der Hinweis auf
+                            Gegenpositionen, aber als ruhiger Text: ohne ihn sähe
+                            ein Beleg für den Bau wie ein Blockadenachweis aus. */}
                         {f.richtung === 'unterstuetzt' && (
                           <span
-                            className="px-1.5 py-0.5 text-[10px] font-black uppercase tracking-[0.1em]"
-                            style={{ backgroundColor: GREEN, color: '#fff' }}
+                            className="text-[11px] uppercase tracking-[0.1em] text-black/35"
                             title="Dieser Akteur fordert, dass gebaut wird — kein Beleg für eine Blockade"
                           >
                             fordert Bau
