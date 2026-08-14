@@ -2,7 +2,7 @@ import { Link, createFileRoute } from '@tanstack/react-router'
 import { useEffect, useMemo, useState, type MouseEvent } from 'react'
 import { getProjectList } from '../server/projects'
 import { getStats } from '../server/stats'
-import { PARTY_COLORS } from '../lib/parties'
+import { PARTIES, PARTY_COLORS } from '../lib/parties'
 import {
   cityYearSeries,
   countableUnits,
@@ -53,6 +53,10 @@ const BLACK = '#111111'
 
 const display = { fontFamily: "'Archivo Black', 'Arial Black', sans-serif" }
 
+// Redaktionelle Entscheidung: Parteien, die nicht in der Bremser-Bilanz ranken.
+// Die Blocker selbst bleiben auf den Projektseiten sichtbar.
+const NICHT_IN_BILANZ = ['BSW']
+
 // STATUS_CHIP kommt aus lib/campaign — hier lag lange eine identische Kopie.
 
 function CountUp({ target }: { target: number }) {
@@ -85,8 +89,18 @@ function KampagnePage() {
   // Hauptzahl: belegte WE plus quellengeprüfte Schätzungen (dedupliziert)
   const gesamt = totalUnits(offen) + estimatedUnits(offen)
   const byStatus = statusBreakdown(projects, true)
-  const ranking = useMemo(() => partyRanking(offen).slice(0, 6), [offen])
+  const parteiBilanz = useMemo(() => partyRanking(offen), [offen])
+  const ranking = useMemo(
+    () => parteiBilanz.filter((r) => !NICHT_IN_BILANZ.includes(r.party)).slice(0, 6),
+    [parteiBilanz],
+  )
   const maxRank = ranking[0]?.units || 1
+  // Parteien, die in keinem offenen Vorhaben als Bremser auftauchen — sie stehen
+  // nicht im Ranking (kein Balken für null) und bekommen deshalb einen eigenen Block.
+  const ohneBlockade = useMemo(
+    () => PARTIES.filter((p) => !parteiBilanz.some((r) => r.party === p)),
+    [parteiBilanz],
+  )
   const blockerNames = useMemo(() => uniqueBlockerNames(offen).slice(0, 18), [offen])
   const serie = useMemo(() => cityYearSeries(stats), [stats])
 
@@ -331,6 +345,34 @@ function KampagnePage() {
             ))}
             <div className="border-t-4" style={{ borderColor: BLACK }} />
           </div>
+
+          {ohneBlockade.includes('FDP') && (
+            <div
+              className="mt-10 border-4 px-6 py-8 sm:px-10"
+              style={{ borderColor: BLACK, backgroundColor: PARTY_COLORS.FDP }}
+            >
+              <div className="flex flex-wrap items-center gap-x-10 gap-y-4">
+                <span
+                  className="tabular-nums"
+                  style={{ ...display, color: BLACK, fontSize: 'clamp(4rem, 14vw, 8rem)', lineHeight: 0.85 }}
+                >
+                  0
+                </span>
+                <div className="max-w-md">
+                  <div style={{ ...display, color: BLACK, fontSize: 'clamp(1.6rem, 4vw, 2.6rem)', lineHeight: 1 }}>
+                    FDP
+                  </div>
+                  <p className="mt-3 text-base font-bold leading-snug text-black/70">
+                    Keine einzige Blockade in den ausgewerteten Drucksachen —
+                    {ohneBlockade.length === 1
+                      ? ' als einzige Partei im Tracker.'
+                      : ' kein Vorhaben, keine Verzögerung, keine Ablehnung.'}
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+
           <p className="mt-4 text-xs font-semibold text-black/40">
             Mehrfachnennungen möglich — an einem Projekt sind oft mehrere Parteien beteiligt.
           </p>
