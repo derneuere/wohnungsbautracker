@@ -1,5 +1,5 @@
 import { Link, createFileRoute } from '@tanstack/react-router'
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState, type MouseEvent } from 'react'
 import { getProjectList } from '../server/projects'
 import { getStats } from '../server/stats'
 import { PARTY_COLORS } from '../lib/parties'
@@ -95,6 +95,17 @@ function KampagnePage() {
   const wallUnits = useMemo(() => offen.reduce((s, p) => s + countableUnits(p), 0), [offen])
   const fertigUnits = useMemo(() => fertig.reduce((s, p) => s + countableUnits(p), 0), [fertig])
 
+  // Sanft scrollen nur bei Anker-Klicks. Ein globales `html { scroll-behavior:
+  // smooth }` würde auch die Scroll-Restoration des Routers animieren — dann
+  // scrollt die Seite bei „Zurück" sichtbar von oben bis zur alten Position.
+  // replaceState statt Standard-Navigation, damit Anker-Sprünge den
+  // Zurück-Stack nicht füllen.
+  const anker = (id: string) => (e: MouseEvent) => {
+    e.preventDefault()
+    document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' })
+    history.replaceState(null, '', `#${id}`)
+  }
+
   const slabColors = [
     { bg: BLACK, fg: YELLOW },
     { bg: CYAN, fg: '#fff' },
@@ -108,18 +119,19 @@ function KampagnePage() {
       {/* Sticky nav */}
       <nav className="sticky top-0 z-[2000] border-b border-black/5 bg-white">
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-5 sm:px-8">
-          <a href="#top" className="flex items-center no-underline" title="Wohnungsbau-Tracker Berlin">
+          <a href="#top" onClick={anker('top')} className="flex items-center no-underline" title="Wohnungsbau-Tracker Berlin">
             <WbtLogo />
           </a>
           <div className="flex items-center gap-6">
             <div className="hidden gap-6 text-[13px] font-bold uppercase tracking-[0.12em] text-black sm:flex">
-              <a href="#zahlen" className="no-underline hover:text-[#1CB5E5]">Zahlen</a>
-              <a href="#bremser" className="no-underline hover:text-[#1CB5E5]">Bremser</a>
-              <a href="#karte" className="no-underline hover:text-[#1CB5E5]">Karte</a>
-              <a href="#projekte" className="no-underline hover:text-[#1CB5E5]">Projekte</a>
+              <a href="#zahlen" onClick={anker('zahlen')} className="no-underline hover:text-[#1CB5E5]">Zahlen</a>
+              <a href="#bremser" onClick={anker('bremser')} className="no-underline hover:text-[#1CB5E5]">Bremser</a>
+              <a href="#karte" onClick={anker('karte')} className="no-underline hover:text-[#1CB5E5]">Karte</a>
+              <a href="#projekte" onClick={anker('projekte')} className="no-underline hover:text-[#1CB5E5]">Projekte</a>
             </div>
             <a
               href="#mitmachen"
+              onClick={anker('mitmachen')}
               className="rounded-full px-5 py-2 text-[13px] font-extrabold uppercase tracking-[0.1em] text-white no-underline transition-transform hover:scale-105"
               style={{ backgroundColor: CYAN }}
             >
@@ -159,6 +171,7 @@ function KampagnePage() {
         </div>
         <a
           href="#zahlen"
+          onClick={anker('zahlen')}
           className="absolute bottom-8 left-1/2 -translate-x-1/2 text-3xl font-black no-underline"
           style={{ color: BLUE }}
           aria-label="Zu den Zahlen"
@@ -332,7 +345,7 @@ function KampagnePage() {
             Überall in der Stadt.
           </h2>
           <p className="mt-4 max-w-xl text-base font-semibold text-white/70">
-            Alle {fmt(projects.length)} Vorhaben — jeder Punkt ein Projekt, Klick öffnet die Details.
+            Alle {fmt(projects.length)} Vorhaben — Bezirk antippen, dann Projekt wählen.
           </p>
           <div className="mx-auto mt-10 max-w-4xl">
             <BerlinSvgMap
@@ -343,9 +356,10 @@ function KampagnePage() {
                   id: p.id,
                   lat: p.lat,
                   lng: p.lng,
+                  bezirk: p.bezirk,
                   title: p.title,
                   sub: `${chip.label}${we ? ` · ${fmt(we)}${p.unitCount ? '' : ' (geschätzt)'} WE` : ''}`,
-                  href: `/projekt/${projectSlug(p)}`,
+                  slug: projectSlug(p),
                 }
               })}
             />
@@ -559,7 +573,9 @@ function KampagnePage() {
           to { transform: translateX(-50%); }
         }
         .kampagne-marquee { animation: kampagne-marquee 40s linear infinite; }
-        html { scroll-behavior: smooth; }
+        @media (prefers-reduced-motion: reduce) {
+          .kampagne-marquee { animation: none; }
+        }
       `}</style>
     </div>
   )

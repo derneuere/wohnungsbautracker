@@ -177,7 +177,7 @@ function LizenzenPage() {
           intro="Der Tracker ist quelloffen. Er läuft auf freier Software, deren Lizenzen jeweils die Nennung der Urheberrechtsvermerke verlangen."
         >
           <Eintrag
-            titel="React, TanStack Router & Start, Vite, Tailwind CSS, Drizzle ORM, Leaflet, Lucide"
+            titel="React, TanStack Router & Start, Vite, Tailwind CSS, Drizzle ORM, Lucide"
             urheber="Die jeweiligen Projektautoren"
             lizenz="MIT bzw. BSD-2-Clause"
           >

@@ -1,4 +1,4 @@
-﻿import { Link, createFileRoute, notFound } from '@tanstack/react-router'
+﻿import { Link, createFileRoute, notFound, useCanGoBack, useRouter } from '@tanstack/react-router'
 import { getProjects } from '../../server/projects'
 import { getBvvParties } from '../../server/bvv'
 import { getStats } from '../../server/stats'
@@ -173,6 +173,12 @@ function Belegdokumente({ dokumente }: { dokumente: Belegdokument[] }) {
 function ProjectDetailPage() {
   const { project: p, bvv, bezirkStats } = Route.useLoaderData()
 
+  // Zurück per History, wenn der Besuch von der Projektwand kam: die
+  // Scroll-Restoration bringt einen dann exakt an die alte Stelle zurück.
+  // Bei Direkteinstieg (Permalink) führt der Link stattdessen zur Startseite.
+  const router = useRouter()
+  const canGoBack = useCanGoBack()
+
   const chip = STATUS_CHIP[p.status] || STATUS_CHIP.abgelehnt
   const parties = splitParties(p)
   const blockers = visibleBlockers(p)
@@ -195,14 +201,25 @@ function ProjectDetailPage() {
           <Link to="/" className="flex items-center no-underline" title="Zur Startseite">
             <WbtLogo height={32} />
           </Link>
-          <Link
-            to="/"
-            hash="projekte"
-            className="rounded-full px-5 py-2 text-[13px] font-extrabold uppercase tracking-[0.1em] text-white no-underline transition-transform hover:scale-105"
-            style={{ backgroundColor: CYAN }}
-          >
-            Alle Projekte
-          </Link>
+          {canGoBack ? (
+            <button
+              type="button"
+              onClick={() => router.history.back()}
+              className="cursor-pointer rounded-full px-5 py-2 text-[13px] font-extrabold uppercase tracking-[0.1em] text-white transition-transform hover:scale-105"
+              style={{ backgroundColor: CYAN }}
+            >
+              Alle Projekte
+            </button>
+          ) : (
+            <Link
+              to="/"
+              hash="projekte"
+              className="rounded-full px-5 py-2 text-[13px] font-extrabold uppercase tracking-[0.1em] text-white no-underline transition-transform hover:scale-105"
+              style={{ backgroundColor: CYAN }}
+            >
+              Alle Projekte
+            </Link>
+          )}
         </div>
       </nav>
 
@@ -544,10 +561,12 @@ function ProjectDetailPage() {
                   id: p.id,
                   lat: p.lat,
                   lng: p.lng,
+                  bezirk: p.bezirk,
                   title: p.title,
                   sub: `${chip.label}${we ? ` · ${fmt(we)}${p.unitCount ? '' : ' (geschätzt)'} WE` : ''}`,
                 },
               ]}
+              staticBezirk={p.bezirk}
             />
           </div>
         </section>
@@ -558,14 +577,25 @@ function ProjectDetailPage() {
         <p className="text-sm font-semibold text-white/50">
           Ein Vorgang von vielen. Der ganze Überblick:
         </p>
-        <Link
-          to="/"
-          hash="projekte"
-          className="mt-5 inline-block rounded-full px-8 py-3 text-sm font-extrabold uppercase tracking-[0.15em] no-underline transition-transform hover:scale-105"
-          style={{ backgroundColor: YELLOW, color: BLUE }}
-        >
-          Zurück zur Projektwand
-        </Link>
+        {canGoBack ? (
+          <button
+            type="button"
+            onClick={() => router.history.back()}
+            className="mt-5 inline-block cursor-pointer rounded-full px-8 py-3 text-sm font-extrabold uppercase tracking-[0.15em] transition-transform hover:scale-105"
+            style={{ backgroundColor: YELLOW, color: BLUE }}
+          >
+            Zurück zur Projektwand
+          </button>
+        ) : (
+          <Link
+            to="/"
+            hash="projekte"
+            className="mt-5 inline-block rounded-full px-8 py-3 text-sm font-extrabold uppercase tracking-[0.15em] no-underline transition-transform hover:scale-105"
+            style={{ backgroundColor: YELLOW, color: BLUE }}
+          >
+            Zurück zur Projektwand
+          </Link>
+        )}
         <p className="mt-8 text-xs font-semibold text-white/30">
           Permalink: /projekt/{projectSlug(p)}
         </p>

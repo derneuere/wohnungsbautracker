@@ -31,8 +31,6 @@ export const Route = createRootRoute({
       { name: 'twitter:image', content: absolut('/og/default.png') },
     ],
     links: [
-      // Leaflet-CSS kam früher vom unpkg-CDN — jetzt importiert Map.tsx sie aus
-      // node_modules, also nur dort, wo tatsächlich eine Leaflet-Karte steht.
       { rel: 'stylesheet', href: appCss },
       // SVG zuerst für alles Moderne, .ico als Rückfallebene für ältere
       // Browser und Feedreader.
