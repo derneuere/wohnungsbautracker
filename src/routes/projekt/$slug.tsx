@@ -20,7 +20,7 @@ import {
 } from '../../lib/design-data'
 import BerlinSvgMap from '../../components/BerlinSvgMap'
 import WbtLogo from '../../components/WbtLogo'
-import { GREEN, STATUS_CHIP } from '../../lib/campaign'
+import { ARCHIVO_FONT_LINKS, GREEN, STATUS_CHIP } from '../../lib/campaign'
 
 const BLUE = '#0B2B6B'
 const DEEP = '#02173A'
@@ -71,14 +71,7 @@ export const Route = createFileRoute('/projekt/$slug')({
         { property: 'og:description', content: desc },
         { property: 'og:type', content: 'article' },
       ],
-      links: [
-        { rel: 'preconnect', href: 'https://fonts.googleapis.com' },
-        { rel: 'preconnect', href: 'https://fonts.gstatic.com', crossOrigin: 'anonymous' },
-        {
-          rel: 'stylesheet',
-          href: 'https://fonts.googleapis.com/css2?family=Archivo+Black&family=Archivo:wght@400;500;600;700;800&display=swap',
-        },
-      ],
+      links: ARCHIVO_FONT_LINKS,
     }
   },
   notFoundComponent: ProjectNotFound,
@@ -565,6 +558,38 @@ function ProjectDetailPage() {
         <p className="mt-8 text-xs font-semibold text-white/30">
           Permalink: /projekt/{projectSlug(p)}
         </p>
+        <div className="mx-auto mt-8 flex max-w-4xl flex-wrap items-center justify-center gap-x-6 gap-y-2 border-t border-white/10 pt-6">
+          <a
+            href="https://julis.berlin/impressum/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-[11px] font-black uppercase tracking-[0.2em] text-white/50 no-underline transition-colors hover:text-white"
+          >
+            Impressum
+          </a>
+          <a
+            href="https://julis.berlin/datenschutz/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-[11px] font-black uppercase tracking-[0.2em] text-white/50 no-underline transition-colors hover:text-white"
+          >
+            Datenschutz
+          </a>
+          <Link
+            to="/lizenzen"
+            className="text-[11px] font-black uppercase tracking-[0.2em] text-white/50 no-underline transition-colors hover:text-white"
+          >
+            Lizenzen & Quellen
+          </Link>
+          <a
+            href="https://julis.berlin/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-[11px] font-black uppercase tracking-[0.2em] text-white/50 no-underline transition-colors hover:text-white"
+          >
+            Junge Liberale Berlin
+          </a>
+        </div>
       </footer>
     </div>
   )

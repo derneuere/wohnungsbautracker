@@ -12,11 +12,9 @@ export const Route = createRootRoute({
       { name: 'description', content: 'Welche Parteien blockieren Neubauprojekte in Berlin?' },
     ],
     links: [
+      // Leaflet-CSS kam früher vom unpkg-CDN — jetzt importiert Map.tsx sie aus
+      // node_modules, also nur dort, wo tatsächlich eine Leaflet-Karte steht.
       { rel: 'stylesheet', href: appCss },
-      {
-        rel: 'stylesheet',
-        href: 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css',
-      },
     ],
   }),
   component: RootLayout,

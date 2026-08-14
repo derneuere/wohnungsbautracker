@@ -1,3 +1,4 @@
+import 'leaflet/dist/leaflet.css'
 import { useEffect, useRef, useState } from 'react'
 import { PARTY_COLORS } from '../lib/parties'
 import { splitParties } from '../lib/design-data'

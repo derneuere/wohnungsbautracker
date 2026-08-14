@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as LizenzenRouteImport } from './routes/lizenzen'
 import { Route as AdminRouteRouteImport } from './routes/admin/route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AdminIndexRouteImport } from './routes/admin/index'
@@ -16,6 +17,11 @@ import { Route as ProjektSlugRouteImport } from './routes/projekt/$slug'
 import { Route as AdminStatsRouteImport } from './routes/admin/stats'
 import { Route as AdminBvvRouteImport } from './routes/admin/bvv'
 
+const LizenzenRoute = LizenzenRouteImport.update({
+  id: '/lizenzen',
+  path: '/lizenzen',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminRouteRoute = AdminRouteRouteImport.update({
   id: '/admin',
   path: '/admin',
@@ -50,6 +56,7 @@ const AdminBvvRoute = AdminBvvRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteRouteWithChildren
+  '/lizenzen': typeof LizenzenRoute
   '/admin/bvv': typeof AdminBvvRoute
   '/admin/stats': typeof AdminStatsRoute
   '/projekt/$slug': typeof ProjektSlugRoute
@@ -57,6 +64,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/lizenzen': typeof LizenzenRoute
   '/admin/bvv': typeof AdminBvvRoute
   '/admin/stats': typeof AdminStatsRoute
   '/projekt/$slug': typeof ProjektSlugRoute
@@ -66,6 +74,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteRouteWithChildren
+  '/lizenzen': typeof LizenzenRoute
   '/admin/bvv': typeof AdminBvvRoute
   '/admin/stats': typeof AdminStatsRoute
   '/projekt/$slug': typeof ProjektSlugRoute
@@ -76,16 +85,24 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/admin'
+    | '/lizenzen'
     | '/admin/bvv'
     | '/admin/stats'
     | '/projekt/$slug'
     | '/admin/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/admin/bvv' | '/admin/stats' | '/projekt/$slug' | '/admin'
+  to:
+    | '/'
+    | '/lizenzen'
+    | '/admin/bvv'
+    | '/admin/stats'
+    | '/projekt/$slug'
+    | '/admin'
   id:
     | '__root__'
     | '/'
     | '/admin'
+    | '/lizenzen'
     | '/admin/bvv'
     | '/admin/stats'
     | '/projekt/$slug'
@@ -95,11 +112,19 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AdminRouteRoute: typeof AdminRouteRouteWithChildren
+  LizenzenRoute: typeof LizenzenRoute
   ProjektSlugRoute: typeof ProjektSlugRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/lizenzen': {
+      id: '/lizenzen'
+      path: '/lizenzen'
+      fullPath: '/lizenzen'
+      preLoaderRoute: typeof LizenzenRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin': {
       id: '/admin'
       path: '/admin'
@@ -164,6 +189,7 @@ const AdminRouteRouteWithChildren = AdminRouteRoute._addFileChildren(
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRouteRoute: AdminRouteRouteWithChildren,
+  LizenzenRoute: LizenzenRoute,
   ProjektSlugRoute: ProjektSlugRoute,
 }
 export const routeTree = rootRouteImport

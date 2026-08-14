@@ -18,7 +18,7 @@ import {
   totalUnits,
   uniqueBlockerNames,
 } from '../lib/design-data'
-import { GREEN, STATUS_CHIP } from '../lib/campaign'
+import { ARCHIVO_FONT_LINKS, GREEN, STATUS_CHIP } from '../lib/campaign'
 import BerlinSvgMap from '../components/BerlinSvgMap'
 import WbtLogo from '../components/WbtLogo'
 
@@ -28,14 +28,7 @@ export const Route = createFileRoute('/')({
       { title: 'Wohnungsbau-Tracker Berlin — Wo blockiert wird, ist nichts möglich.' },
       { name: 'description', content: 'Welche Akteure blockieren den Wohnungsbau in Berlin? Alle blockierten, verzögerten und abgelehnten Neubauprojekte — mit Quellen.' },
     ],
-    links: [
-      { rel: 'preconnect', href: 'https://fonts.googleapis.com' },
-      { rel: 'preconnect', href: 'https://fonts.gstatic.com', crossOrigin: 'anonymous' },
-      {
-        rel: 'stylesheet',
-        href: 'https://fonts.googleapis.com/css2?family=Archivo+Black&family=Archivo:wght@400;500;600;700;800&display=swap',
-      },
-    ],
+    links: ARCHIVO_FONT_LINKS,
   }),
   loader: async () => {
     const [projects, stats] = await Promise.all([getProjects(), getStats()])
@@ -488,6 +481,66 @@ function KampagnePage() {
               insgesamt, Land Berlin).
             </p>
           </div>
+        </div>
+
+        {/* Wie der Tracker entsteht */}
+        <div className="mx-auto mt-8 max-w-4xl border-t-2 pt-4 text-left" style={{ borderColor: CYAN }}>
+          <h3 className="text-[11px] font-black uppercase tracking-[0.2em] text-white/70">So arbeiten wir</h3>
+          <p className="mt-2 text-xs font-semibold leading-relaxed text-white/50">
+            Grundlage sind öffentliche Quellen: BVV-Drucksachen und Sitzungsprotokolle aus den
+            Ratsinformationssystemen der Bezirke, Pressemitteilungen, Berichterstattung und
+            amtliche Statistik. Diese Quellen werden in KI-gestützten Workflows (Claude Opus)
+            ausgewertet, strukturiert und zu den Projekttexten verdichtet — jede Zahl und jede
+            Aussage bleibt dabei an einen Beleg gebunden. Vor der Veröffentlichung prüfen
+            Fachleute aus Kommunal- und Wohnungspolitik die Einträge gegen: Sie geben
+            Rückmeldung zu Einordnung und Kontext, korrigieren Fehler und geben jeden Text frei.
+            Der Mensch entscheidet, die Maschine recherchiert. Fehler trotzdem gefunden?
+            Wir korrigieren sie — Kontakt über das{' '}
+            <a
+              href="https://julis.berlin/impressum/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="underline decoration-2 underline-offset-2 hover:text-white/80"
+              style={{ color: CYAN }}
+            >
+              Impressum
+            </a>
+            .
+          </p>
+        </div>
+
+        {/* Rechtliches */}
+        <div className="mx-auto mt-12 flex max-w-4xl flex-wrap items-center justify-center gap-x-6 gap-y-2 border-t border-white/10 pt-6">
+          <a
+            href="https://julis.berlin/impressum/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-[11px] font-black uppercase tracking-[0.2em] text-white/50 no-underline transition-colors hover:text-white"
+          >
+            Impressum
+          </a>
+          <a
+            href="https://julis.berlin/datenschutz/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-[11px] font-black uppercase tracking-[0.2em] text-white/50 no-underline transition-colors hover:text-white"
+          >
+            Datenschutz
+          </a>
+          <Link
+            to="/lizenzen"
+            className="text-[11px] font-black uppercase tracking-[0.2em] text-white/50 no-underline transition-colors hover:text-white"
+          >
+            Lizenzen & Quellen
+          </Link>
+          <a
+            href="https://julis.berlin/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-[11px] font-black uppercase tracking-[0.2em] text-white/50 no-underline transition-colors hover:text-white"
+          >
+            Junge Liberale Berlin
+          </a>
         </div>
 
       </footer>

@@ -25,11 +25,24 @@ export const STATUS_CHIP: Record<string, { bg: string; fg: string; label: string
 /** Status, die noch offene Vorhaben bezeichnen — Grundlage aller Summen. */
 export const OFFENE_STATUS = ['blockiert', 'verzögert', 'abgelehnt']
 
+/*
+ * Die @font-face-Regeln stehen in styles.css, die Dateien in public/fonts/ —
+ * kein Google-Fonts-Request, keine Besucher-IP an Dritte. Hier nur Preloads für
+ * die beiden Latin-Dateien, die auf jeder Seite sofort gebraucht werden.
+ */
 export const ARCHIVO_FONT_LINKS = [
-  { rel: 'preconnect', href: 'https://fonts.googleapis.com' },
-  { rel: 'preconnect', href: 'https://fonts.gstatic.com', crossOrigin: 'anonymous' as const },
   {
-    rel: 'stylesheet',
-    href: 'https://fonts.googleapis.com/css2?family=Archivo+Black&family=Archivo:wght@400;500;600;700;800&display=swap',
+    rel: 'preload',
+    href: '/fonts/archivo-latin.woff2',
+    as: 'font',
+    type: 'font/woff2',
+    crossOrigin: 'anonymous' as const,
+  },
+  {
+    rel: 'preload',
+    href: '/fonts/archivo-black-latin.woff2',
+    as: 'font',
+    type: 'font/woff2',
+    crossOrigin: 'anonymous' as const,
   },
 ]
