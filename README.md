@@ -1,193 +1,171 @@
-Welcome to your new TanStack Start app! 
+# Wohnungsbau-Tracker Berlin
 
-# Getting Started
+Welche Parteien blockieren Neubauprojekte in Berlin? Der Tracker sammelt Bauvorhaben,
+die in Berlin nicht vorankommen, benennt die belegbaren Ursachen und rechnet zusammen,
+wie viele Wohnungen dadurch nicht entstehen.
 
-To run this application:
+**Live: [wohnungsbautracker.de](https://wohnungsbautracker.de)**
+
+Jede Aussage auf einer Projektseite ist mit dem Dokument verlinkt, aus dem sie stammt —
+BVV-Drucksachen, Sitzungsprotokolle, amtliche Statistik, Presseberichte. Was sich nicht
+belegen ließ, steht nicht in der Bilanz.
+
+---
+
+## Was der Tracker abbildet
+
+**Projekte** (`blocked_projects`) sind der Kern. Jedes hat einen Status
+(`blockiert`, `verzögert`, `abgelehnt`, `erledigt`), einen Bezirk, Koordinaten für die
+Karte und einen redaktionellen Text mit Fußnotenapparat.
+
+Ein paar Unterscheidungen prägen den ganzen Code:
+
+- **Bestätigte vs. geschätzte Wohnungszahlen.** `unit_count` ist belegt, `unit_count_estimate`
+  recherchiert — mit Spanne, Quellen und Konfidenz in `unit_count_estimate_meta`. Beide
+  Zahlen bleiben in allen Auswertungen getrennt sichtbar.
+- **Blockierer statt Partei.** Die Spalte `party` ist tot. Wer ein Vorhaben aufhält, steht
+  in `blockers` als JSON-Liste mit Typ (`partei`, `bürgerinitiative`, `behörde`, `gericht`,
+  `umwelt`, `investor`). Die Partei-Bilanz leitet `splitParties` daraus ab — ein Gericht
+  oder eine Bürgerinitiative landet damit nicht versehentlich bei einer Partei.
+- **Sichtbarkeitsfilter statt Löschen.** Projekte, bei denen die Recherche keine politische
+  oder verwaltungsseitige Ursache belegen konnte, werden auf `hidden` gesetzt. Daten und
+  Belege bleiben erhalten, aus der öffentlichen Ansicht und allen Summen fallen sie raus.
+- **`erledigt` zählt nicht mit.** Vorhaben, die nach jahrelanger Blockade doch fertig
+  wurden, bleiben im Tracker — der Verzug ist die Aussage —, gehen aber nicht in die
+  Zahl der blockierten Wohnungen ein.
+
+Daneben: `bvv_parties` (Zählgemeinschaften der zwölf Bezirke) und `construction_stats`
+(Genehmigungen und Fertigstellungen je Jahr, Amt für Statistik Berlin-Brandenburg).
+
+Stand August 2026: 78 Projekte in der Datenbank, davon 48 öffentlich sichtbar;
+Baustatistik 2015–2025.
+
+## Schnellstart
 
 ```bash
 bun install
+```
+
+```bash
 bun --bun run dev
 ```
 
-# Building For Production
+Läuft dann auf http://localhost:3000. Die Datenbank `sqlite.db` liegt versioniert im
+Repo — es braucht kein Seeding und keinen Import, um loszulegen.
 
-To build this application for production:
+Adminbereich: http://localhost:3000/admin (Standardpasswort `wohnungsbau2024`, lokal ok,
+in Produktion per `ADMIN_PASSWORD` überschreiben).
 
-```bash
-bun --bun run build
+## Aufbau
+
+```
+src/
+  routes/            Dateibasiertes Routing (TanStack Router)
+    index.tsx          Startseite: Bilanz, Karte, Projektwall
+    projekt/$slug.tsx  Projektseite mit Belegapparat
+    lizenzen.tsx       Quellen- und Lizenznachweis
+    og/$slug[.]png.ts  Teilen-Vorschaubild pro Projekt
+    admin/             Projekte, Baustatistik, BVV-Mehrheiten
+  server/            Serverfunktionen — Datenzugriff, Auth, Cache, OG-Rendering
+  lib/               Geteilte Ableitungen: design-data.ts (Metriken, Fußnoten,
+                     Parteizerlegung), campaign.ts (Designtokens), parties.ts, site.ts
+  db/                Drizzle-Schema, Client, DB-Pfad
+  components/        BerlinSvgMap (Bezirkskarte), WbtLogo
+  scripts/           Einmal-Skripte: BVV-Scraper, Importe, Icon-Erzeugung
+public/              Schriften, Icons, Bezirksgeometrie (GeoJSON)
+data/                Rohdaten der BVV-Recherche als JSON
 ```
 
-## Testing
+Zwei Konventionen, die sonst überraschen:
 
-This project uses [Vitest](https://vitest.dev/) for testing. You can run the tests with:
+- Alles, was `@tanstack/react-start/server` oder `nitro/storage` anfasst, liegt in einer
+  `*.server.ts`-Datei und wird nur aus `createServerOnlyFn`-Rümpfen dynamisch geladen.
+  Ein statischer Import wandert über `/admin` in den Client-Graphen und bricht den Build.
+- Startseite und Projektseiten werden serverseitig gecacht (300 s, `stale-while-revalidate`).
+  Jede schreibende Serverfunktion leert den Cache anschließend selbst — das TTL ist die
+  Obergrenze für den Fall, dass das einmal nicht durchkommt, nicht die normale Verzögerung.
 
-```bash
-bun --bun run test
-```
+## Skripte
 
-## Styling
+| Befehl | Zweck |
+| --- | --- |
+| `bun --bun run dev` | Entwicklungsserver auf Port 3000 |
+| `bun --bun run build` | Produktionsbuild nach `.output/` |
+| `bun --bun run preview` | Build lokal ausliefern |
+| `bun run icons` | Favicons, App-Icons und `og/default.png` aus `public/favicon.svg` erzeugen |
+| `bunx drizzle-kit push` | Schemaänderungen auf die lokale `sqlite.db` schreiben |
+| `bun migrate.ts` | Fehlende Spalten additiv ergänzen (läuft beim Containerstart) |
 
-This project uses [Tailwind CSS](https://tailwindcss.com/) for styling.
+Vitest ist eingerichtet (`bun --bun run test`), Testdateien gibt es bislang keine.
 
-### Removing Tailwind CSS
+Die Skripte unter `src/scripts/` sind Recherchewerkzeuge aus einzelnen Durchgängen, keine
+laufende Pipeline: `scrape-bvv.ts` / `scrape-all-bvv.ts` holen Drucksachen aus den
+ALLRIS-Systemen der Bezirke, `analyze-bvv.ts` wertet sie aus, die `import-*`- und
+`update-*`-Skripte haben ihre Ergebnisse in die Datenbank geschrieben. Sie erwarten
+`./sqlite.db` und laufen mit `bun run src/scripts/<datei>.ts`.
 
-If you prefer not to use Tailwind CSS:
+## Datenbank
 
-1. Remove the demo pages in `src/routes/demo/`
-2. Replace the Tailwind import in `src/styles.css` with your own styles
-3. Remove `tailwindcss()` from the plugins array in `vite.config.ts`
-4. Uninstall the packages: `bun install @tailwindcss/vite tailwindcss -D`
+SQLite über Drizzle ORM und `@libsql/client`. Ein einziger Ort bestimmt den Pfad
+([src/db/path.ts](src/db/path.ts)): lokal `./sqlite.db`, in Produktion `$DB_PATH`.
 
+**In Produktion ist die Live-Datenbank die Wahrheit.** Sie liegt auf einem persistenten
+Volume unter `/app/data/sqlite.db` und wird bei einem Deploy nicht überschrieben — die
+Datei im Image dient nur der Erstbefüllung. Redaktionelle Änderungen passieren im
+Adminbereich und damit direkt auf dem Volume. Wer lokal an Daten arbeitet, holt sich
+den Live-Stand über Export/Import im Adminbereich, statt die Repo-Datei zu committen
+und zu hoffen.
 
+Schemaänderungen brauchen beides: `drizzle-kit push` trifft im Docker-Build nur die
+Datei im Image. Damit auch die Volume-Datenbank mitkommt, gehört jede neue Spalte
+zusätzlich in die Liste in [migrate.ts](migrate.ts) — additiv, idempotent, läuft bei
+jedem Containerstart.
 
-## Routing
+## Adminbereich
 
-This project uses [TanStack Router](https://tanstack.com/router) with file-based routing. Routes are managed as files in `src/routes`.
+`/admin` (Projekte), `/admin/stats` (Baustatistik), `/admin/bvv` (Zählgemeinschaften).
 
-### Adding A Route
+Die Anmeldung läuft über ein versiegeltes Session-Cookie; jede schreibende und jede
+nicht-öffentliche Serverfunktion ruft zuerst `requireAdmin()`. Das gilt ausdrücklich auch
+für Export und Import der kompletten Datenbank — der Import überschreibt die Live-DB und
+prüft vorher nur, ob die Datei überhaupt einen SQLite-Header hat.
 
-To add a new route to your application just add a new file in the `./src/routes` directory.
+## Deployment
 
-TanStack will automatically generate the content of the route file for you.
+Docker-Image aus dem [Dockerfile](Dockerfile), deployt über Coolify aus `main`. Der Build
+läuft mit Bun, das Laufzeit-Image startet `migrate.ts` und dann den Nitro-Server.
 
-Now that you have two routes you can use a `Link` component to navigate between them.
+Wichtig: ein persistentes Volume auf `/app/data` mounten, sonst ist bei jedem Deploy
+jede redaktionelle Änderung weg.
 
-### Adding Links
+| Variable | Vorgabe | Bedeutung |
+| --- | --- | --- |
+| `DB_PATH` | `./sqlite.db` (Image: `/app/data/sqlite.db`) | Ort der Datenbank |
+| `ADMIN_PASSWORD` | `wohnungsbau2024` | Passwort des Adminbereichs — in Produktion setzen |
+| `SESSION_SECRET` | aus `ADMIN_PASSWORD` abgeleitet | Siegel des Session-Cookies, ≥ 32 Zeichen |
+| `VITE_SITE_URL` | `https://wohnungsbautracker.de` | Absolute Adresse für Open-Graph-Tags (Build-Zeit) |
+| `HOST` / `PORT` | `0.0.0.0` / `3000` | Bindung des Servers |
 
-To use SPA (Single Page Application) navigation you will need to import the `Link` component from `@tanstack/react-router`.
+Fehlen `ADMIN_PASSWORD` oder `SESSION_SECRET` in Produktion, warnt der Server beim Start —
+mit dem Standardpasswort steht der Adminbereich praktisch offen.
 
-```tsx
-import { Link } from "@tanstack/react-router";
-```
+## Technik
 
-Then anywhere in your JSX you can use it like so:
+TanStack Start (React 19, SSR) · TanStack Router mit dateibasiertem Routing · Nitro als
+Server und Cache · Drizzle ORM auf SQLite · Tailwind CSS 4 · resvg-wasm für die
+Teilen-Vorschaubilder · Bun als Laufzeit und Paketmanager.
 
-```tsx
-<Link to="/about">About</Link>
-```
+## Quellen und Lizenz
 
-This will create a link that will navigate to the `/about` route.
+Der Tracker wertet ausschließlich öffentlich zugängliche Quellen aus. BVV-Drucksachen und
+Protokolle sind amtliche Werke (§ 5 UrhG) und werden zitiert und verlinkt, nicht
+gespiegelt. Baustatistik und Bezirksgrenzen stehen unter der Datenlizenz Deutschland
+– Namensnennung 2.0. Aus Presseartikeln werden nur einzelne Fakten übernommen, jeweils
+mit Titel, Medium und Link. Der vollständige Nachweis steht unter
+[/lizenzen](https://wohnungsbautracker.de/lizenzen) und in
+[src/routes/lizenzen.tsx](src/routes/lizenzen.tsx).
 
-More information on the `Link` component can be found in the [Link documentation](https://tanstack.com/router/v1/docs/framework/react/api/router/linkComponent).
+Der Code steht unter der MIT-Lizenz, siehe [LICENSE](LICENSE) — © 2026 Junge Liberale Berlin.
 
-### Using A Layout
-
-In the File Based Routing setup the layout is located in `src/routes/__root.tsx`. Anything you add to the root route will appear in all the routes. The route content will appear in the JSX where you render `{children}` in the `shellComponent`.
-
-Here is an example layout that includes a header:
-
-```tsx
-import { HeadContent, Scripts, createRootRoute } from '@tanstack/react-router'
-
-export const Route = createRootRoute({
-  head: () => ({
-    meta: [
-      { charSet: 'utf-8' },
-      { name: 'viewport', content: 'width=device-width, initial-scale=1' },
-      { title: 'My App' },
-    ],
-  }),
-  shellComponent: ({ children }) => (
-    <html lang="en">
-      <head>
-        <HeadContent />
-      </head>
-      <body>
-        <header>
-          <nav>
-            <Link to="/">Home</Link>
-            <Link to="/about">About</Link>
-          </nav>
-        </header>
-        {children}
-        <Scripts />
-      </body>
-    </html>
-  ),
-})
-```
-
-More information on layouts can be found in the [Layouts documentation](https://tanstack.com/router/latest/docs/framework/react/guide/routing-concepts#layouts).
-
-## Server Functions
-
-TanStack Start provides server functions that allow you to write server-side code that seamlessly integrates with your client components.
-
-```tsx
-import { createServerFn } from '@tanstack/react-start'
-
-const getServerTime = createServerFn({
-  method: 'GET',
-}).handler(async () => {
-  return new Date().toISOString()
-})
-
-// Use in a component
-function MyComponent() {
-  const [time, setTime] = useState('')
-  
-  useEffect(() => {
-    getServerTime().then(setTime)
-  }, [])
-  
-  return <div>Server time: {time}</div>
-}
-```
-
-## API Routes
-
-You can create API routes by using the `server` property in your route definitions:
-
-```tsx
-import { createFileRoute } from '@tanstack/react-router'
-import { json } from '@tanstack/react-start'
-
-export const Route = createFileRoute('/api/hello')({
-  server: {
-    handlers: {
-      GET: () => json({ message: 'Hello, World!' }),
-    },
-  },
-})
-```
-
-## Data Fetching
-
-There are multiple ways to fetch data in your application. You can use TanStack Query to fetch data from a server. But you can also use the `loader` functionality built into TanStack Router to load the data for a route before it's rendered.
-
-For example:
-
-```tsx
-import { createFileRoute } from '@tanstack/react-router'
-
-export const Route = createFileRoute('/people')({
-  loader: async () => {
-    const response = await fetch('https://swapi.dev/api/people')
-    return response.json()
-  },
-  component: PeopleComponent,
-})
-
-function PeopleComponent() {
-  const data = Route.useLoaderData()
-  return (
-    <ul>
-      {data.results.map((person) => (
-        <li key={person.name}>{person.name}</li>
-      ))}
-    </ul>
-  )
-}
-```
-
-Loaders simplify your data fetching logic dramatically. Check out more information in the [Loader documentation](https://tanstack.com/router/latest/docs/framework/react/guide/data-loading#loader-parameters).
-
-# Demo files
-
-Files prefixed with `demo` can be safely deleted. They are there to provide a starting point for you to play around with the features you've installed.
-
-# Learn More
-
-You can learn more about all of the offerings from TanStack in the [TanStack documentation](https://tanstack.com).
-
-For TanStack Start specific documentation, visit [TanStack Start](https://tanstack.com/start).
+Fehlt eine Quelle oder ist eine Angabe falsch: ein Hinweis genügt, Kontakt über das
+[Impressum](https://julis.berlin/impressum/).
