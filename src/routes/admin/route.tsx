@@ -33,6 +33,9 @@ function AdminLayout() {
     if (result.valid) {
       setAuthed(true)
       setError('')
+    } else if (result.gesperrt) {
+      const minuten = Math.ceil(result.wartezeit / 60)
+      setError(`Zu viele Fehlversuche. Wieder möglich in ${minuten} Minute${minuten === 1 ? '' : 'n'}.`)
     } else {
       setError('Falsches Passwort')
     }

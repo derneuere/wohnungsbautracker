@@ -20,12 +20,59 @@ import { nitro } from 'nitro/vite'
 const staticCache = (sekunden: number) =>
   `public, max-age=${sekunden}, stale-while-revalidate=${sekunden * 7}`
 
+// Die CSP bildet ab, was die Seite wirklich lädt: keine externen Skripte, keine
+// externen Bilder, Schriften aus public/fonts. Die vielen externen Adressen im
+// Text sind ausschliesslich <a href> — Links unterliegen der CSP nicht.
+//
+// `'unsafe-inline'` bei script-src ist keine Nachlässigkeit, sondern die
+// Bauweise: TanStack Start legt den Hydrations-Payload als inline <script> in
+// die Seite, und der ändert sich pro Seite, ist also weder über Hashes noch
+// über eine statische Route-Regel per Nonce abzudecken. Bei style-src dasselbe
+// für die 393 inline style-Attribute. Der Gewinn liegt hier deshalb nicht beim
+// Inline-XSS, sondern darin, dass fremde Herkünfte für Skripte, Verbindungen
+// und Einbettungen ausgeschlossen sind — und der Rest der Seite hat mit
+// `dangerouslySetInnerHTML` ohnehin keinen Einschleusweg.
+const csp = [
+  "default-src 'self'",
+  "script-src 'self' 'unsafe-inline'",
+  "style-src 'self' 'unsafe-inline'",
+  "img-src 'self' data:",
+  "font-src 'self'",
+  "connect-src 'self'",
+  "object-src 'none'",
+  "base-uri 'self'",
+  "form-action 'self'",
+  "frame-ancestors 'none'",
+].join('; ')
+
+const sicherheitsHeader = {
+  'content-security-policy': csp,
+  // Ein Jahr, mit Subdomains — die Domain bedient nur diesen Tracker. Bewusst
+  // ohne `preload`: der Eintrag in die Browserliste ist praktisch nicht mehr
+  // rückgängig zu machen.
+  'strict-transport-security': 'max-age=31536000; includeSubDomains',
+  // Kein Erraten von Inhaltstypen: eine hochgeladene Datei, die wie HTML
+  // aussieht, wird dann auch nicht als HTML ausgeführt.
+  'x-content-type-options': 'nosniff',
+  // Beim Klick auf eine Quelle bekommt die Zielseite nur die Herkunft, nicht
+  // den vollständigen Pfad — welches Projekt jemand gelesen hat, geht die
+  // verlinkte Zeitung nichts an.
+  'referrer-policy': 'strict-origin-when-cross-origin',
+  // frame-ancestors deckt das für moderne Browser schon ab; das hier ist die
+  // Fassung für ältere.
+  'x-frame-options': 'DENY',
+  'permissions-policy': 'geolocation=(), microphone=(), camera=(), interest-cohort=()',
+}
+
 const config = defineConfig({
   plugins: [
     devtools(),
     nitro({
       rollupConfig: { external: [/^@sentry\//] },
       routeRules: {
+        // Für jede Antwort. `/**` ist die unspezifischste Regel; die
+        // Cache-Header der Einzelpfade unten treten daneben, nicht dagegen.
+        '/**': { headers: sicherheitsHeader },
         // Die Startseite ist für alle Besucher identisch — sie liest weder
         // Cookie noch Session. Nitro rendert sie deshalb höchstens einmal pro
         // Minute und beantwortet alles dazwischen aus dem Cache. Preis dafür:

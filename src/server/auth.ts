@@ -23,9 +23,17 @@ export async function requireAdmin(): Promise<void> {
 export const checkPassword = createServerFn({ method: 'POST' }).handler(
   async ({ data: password }: { data: string }) => {
     const s = await sitzung()
-    if (!s.passwortStimmt(password)) return { valid: false }
+    // Erst die Bremse, dann der Vergleich: ein gesperrter Aufrufer soll aus der
+    // Antwort nicht ablesen können, ob das Passwort gestimmt hätte.
+    const bremse = s.pruefeBremse()
+    if (bremse.gesperrt) return { valid: false, gesperrt: true, wartezeit: bremse.wartezeit }
+    if (!s.passwortStimmt(password)) {
+      s.merkeFehlversuch()
+      return { valid: false, gesperrt: false, wartezeit: 0 }
+    }
+    s.loescheFehlversuche()
     await s.anmelden()
-    return { valid: true }
+    return { valid: true, gesperrt: false, wartezeit: 0 }
   },
 )
 
