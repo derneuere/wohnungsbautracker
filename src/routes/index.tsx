@@ -1,6 +1,6 @@
 import { Link, createFileRoute } from '@tanstack/react-router'
 import { useEffect, useMemo, useState } from 'react'
-import { getProjects } from '../server/projects'
+import { getProjectList } from '../server/projects'
 import { getStats } from '../server/stats'
 import { PARTY_COLORS } from '../lib/parties'
 import {
@@ -19,19 +19,27 @@ import {
   uniqueBlockerNames,
 } from '../lib/design-data'
 import { ARCHIVO_FONT_LINKS, GREEN, STATUS_CHIP } from '../lib/campaign'
+import { SITE_URL } from '../lib/site'
 import BerlinSvgMap from '../components/BerlinSvgMap'
 import WbtLogo from '../components/WbtLogo'
+
+const TITEL = 'Wohnungsbau-Tracker Berlin — Wo blockiert wird, ist nichts möglich.'
+const BESCHREIBUNG =
+  'Welche Akteure blockieren den Wohnungsbau in Berlin? Alle blockierten, verzögerten und abgelehnten Neubauprojekte — mit Quellen.'
 
 export const Route = createFileRoute('/')({
   head: () => ({
     meta: [
-      { title: 'Wohnungsbau-Tracker Berlin — Wo blockiert wird, ist nichts möglich.' },
-      { name: 'description', content: 'Welche Akteure blockieren den Wohnungsbau in Berlin? Alle blockierten, verzögerten und abgelehnten Neubauprojekte — mit Quellen.' },
+      { title: TITEL },
+      { name: 'description', content: BESCHREIBUNG },
+      { property: 'og:title', content: TITEL },
+      { property: 'og:description', content: BESCHREIBUNG },
+      { property: 'og:url', content: SITE_URL },
     ],
-    links: ARCHIVO_FONT_LINKS,
+    links: [...ARCHIVO_FONT_LINKS, { rel: 'canonical', href: SITE_URL }],
   }),
   loader: async () => {
-    const [projects, stats] = await Promise.all([getProjects(), getStats()])
+    const [projects, stats] = await Promise.all([getProjectList(), getStats()])
     return { projects, stats }
   },
   component: KampagnePage,

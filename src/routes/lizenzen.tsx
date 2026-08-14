@@ -185,6 +185,16 @@ function LizenzenPage() {
             in den jeweiligen Paketen.
           </Eintrag>
           <Eintrag
+            titel="resvg-js (WebAssembly)"
+            urheber="yisibl und Mitwirkende, auf Basis von resvg (RazrFalcon)"
+            lizenz="Mozilla Public License 2.0"
+            lizenzUrl="https://www.mozilla.org/en-US/MPL/2.0/"
+          >
+            Rastert die Teilen-Vorschaubilder unter /og/…png auf dem Server aus SVG zu PNG.
+            Die WebAssembly-Datei liegt unverändert im Repository; für die Beschriftung der
+            Bilder wird dieselbe Archivo-Familie verwendet wie auf der Website.
+          </Eintrag>
+          <Eintrag
             titel="Quellcode des Wohnungsbau-Trackers"
             urheber="Junge Liberale Berlin"
             lizenz="MIT-Lizenz — Repository auf GitHub"

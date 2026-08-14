@@ -14,6 +14,7 @@ import { Route as AdminRouteRouteImport } from './routes/admin/route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AdminIndexRouteImport } from './routes/admin/index'
 import { Route as ProjektSlugRouteImport } from './routes/projekt/$slug'
+import { Route as OgSlugDotpngRouteImport } from './routes/og/$slug[.]png'
 import { Route as AdminStatsRouteImport } from './routes/admin/stats'
 import { Route as AdminBvvRouteImport } from './routes/admin/bvv'
 
@@ -42,6 +43,11 @@ const ProjektSlugRoute = ProjektSlugRouteImport.update({
   path: '/projekt/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
+const OgSlugDotpngRoute = OgSlugDotpngRouteImport.update({
+  id: '/og/$slug.png',
+  path: '/og/$slug.png',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminStatsRoute = AdminStatsRouteImport.update({
   id: '/stats',
   path: '/stats',
@@ -59,6 +65,7 @@ export interface FileRoutesByFullPath {
   '/lizenzen': typeof LizenzenRoute
   '/admin/bvv': typeof AdminBvvRoute
   '/admin/stats': typeof AdminStatsRoute
+  '/og/$slug.png': typeof OgSlugDotpngRoute
   '/projekt/$slug': typeof ProjektSlugRoute
   '/admin/': typeof AdminIndexRoute
 }
@@ -67,6 +74,7 @@ export interface FileRoutesByTo {
   '/lizenzen': typeof LizenzenRoute
   '/admin/bvv': typeof AdminBvvRoute
   '/admin/stats': typeof AdminStatsRoute
+  '/og/$slug.png': typeof OgSlugDotpngRoute
   '/projekt/$slug': typeof ProjektSlugRoute
   '/admin': typeof AdminIndexRoute
 }
@@ -77,6 +85,7 @@ export interface FileRoutesById {
   '/lizenzen': typeof LizenzenRoute
   '/admin/bvv': typeof AdminBvvRoute
   '/admin/stats': typeof AdminStatsRoute
+  '/og/$slug.png': typeof OgSlugDotpngRoute
   '/projekt/$slug': typeof ProjektSlugRoute
   '/admin/': typeof AdminIndexRoute
 }
@@ -88,6 +97,7 @@ export interface FileRouteTypes {
     | '/lizenzen'
     | '/admin/bvv'
     | '/admin/stats'
+    | '/og/$slug.png'
     | '/projekt/$slug'
     | '/admin/'
   fileRoutesByTo: FileRoutesByTo
@@ -96,6 +106,7 @@ export interface FileRouteTypes {
     | '/lizenzen'
     | '/admin/bvv'
     | '/admin/stats'
+    | '/og/$slug.png'
     | '/projekt/$slug'
     | '/admin'
   id:
@@ -105,6 +116,7 @@ export interface FileRouteTypes {
     | '/lizenzen'
     | '/admin/bvv'
     | '/admin/stats'
+    | '/og/$slug.png'
     | '/projekt/$slug'
     | '/admin/'
   fileRoutesById: FileRoutesById
@@ -113,6 +125,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AdminRouteRoute: typeof AdminRouteRouteWithChildren
   LizenzenRoute: typeof LizenzenRoute
+  OgSlugDotpngRoute: typeof OgSlugDotpngRoute
   ProjektSlugRoute: typeof ProjektSlugRoute
 }
 
@@ -153,6 +166,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProjektSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/og/$slug.png': {
+      id: '/og/$slug.png'
+      path: '/og/$slug.png'
+      fullPath: '/og/$slug.png'
+      preLoaderRoute: typeof OgSlugDotpngRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin/stats': {
       id: '/admin/stats'
       path: '/stats'
@@ -190,6 +210,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRouteRoute: AdminRouteRouteWithChildren,
   LizenzenRoute: LizenzenRoute,
+  OgSlugDotpngRoute: OgSlugDotpngRoute,
   ProjektSlugRoute: ProjektSlugRoute,
 }
 export const routeTree = rootRouteImport

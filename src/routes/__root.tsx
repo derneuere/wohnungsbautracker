@@ -2,6 +2,9 @@ import { HeadContent, Outlet, Scripts, createRootRoute, Link, useRouterState } f
 import appCss from '../styles.css?url'
 import WbtLogo from '../components/WbtLogo'
 import { BLUE, YELLOW } from '../lib/campaign'
+import { absolut } from '../lib/site'
+
+const BESCHREIBUNG = 'Welche Parteien blockieren Neubauprojekte in Berlin?'
 
 export const Route = createRootRoute({
   head: () => ({
@@ -9,12 +12,34 @@ export const Route = createRootRoute({
       { charSet: 'utf-8' },
       { name: 'viewport', content: 'width=device-width, initial-scale=1' },
       { title: 'Wohnungsbau-Tracker Berlin' },
-      { name: 'description', content: 'Welche Parteien blockieren Neubauprojekte in Berlin?' },
+      { name: 'description', content: BESCHREIBUNG },
+      { name: 'theme-color', content: BLUE },
+      // Grundausstattung der Teilen-Vorschau. Jede Route darf einzelne Angaben
+      // überschreiben — TanStack behält pro name/property den Eintrag der
+      // tiefsten Route, deshalb stehen hier nur die Voreinstellungen.
+      { property: 'og:site_name', content: 'Wohnungsbau-Tracker Berlin' },
+      { property: 'og:locale', content: 'de_DE' },
+      { property: 'og:type', content: 'website' },
+      { property: 'og:title', content: 'Wohnungsbau-Tracker Berlin' },
+      { property: 'og:description', content: BESCHREIBUNG },
+      { property: 'og:image', content: absolut('/og/default.png') },
+      { property: 'og:image:type', content: 'image/png' },
+      { property: 'og:image:width', content: '1200' },
+      { property: 'og:image:height', content: '630' },
+      { property: 'og:image:alt', content: 'Wohnungsbau-Tracker Berlin — Wo blockiert wird, ist nichts möglich.' },
+      { name: 'twitter:card', content: 'summary_large_image' },
+      { name: 'twitter:image', content: absolut('/og/default.png') },
     ],
     links: [
       // Leaflet-CSS kam früher vom unpkg-CDN — jetzt importiert Map.tsx sie aus
       // node_modules, also nur dort, wo tatsächlich eine Leaflet-Karte steht.
       { rel: 'stylesheet', href: appCss },
+      // SVG zuerst für alles Moderne, .ico als Rückfallebene für ältere
+      // Browser und Feedreader.
+      { rel: 'icon', href: '/favicon.svg', type: 'image/svg+xml' },
+      { rel: 'icon', href: '/favicon.ico', sizes: '48x48' },
+      { rel: 'apple-touch-icon', href: '/apple-touch-icon.png' },
+      { rel: 'manifest', href: '/manifest.json' },
     ],
   }),
   component: RootLayout,

@@ -20,6 +20,10 @@ data/raw-*/
 
 # Lokale Sicherungen der Datenbank vor Recherche-Durchgaengen
 sqlite.db.backup-*
+sqlite.db.bak*
+
+# Absturzprotokolle der Git-Bash unter Windows
+*.stackdump
 
 # Projekt baut mit Bun (bun.lock); npm-Lockfile waere widerspruechlich
 package-lock.json

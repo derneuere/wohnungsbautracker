@@ -21,6 +21,7 @@ import {
 import BerlinSvgMap from '../../components/BerlinSvgMap'
 import WbtLogo from '../../components/WbtLogo'
 import { ARCHIVO_FONT_LINKS, GREEN, STATUS_CHIP } from '../../lib/campaign'
+import { absolut } from '../../lib/site'
 
 const BLUE = '#0B2B6B'
 const DEEP = '#02173A'
@@ -57,12 +58,17 @@ export const Route = createFileRoute('/projekt/$slug')({
       bezirkStats: stats.filter((s) => s.bezirk === project.bezirk),
     }
   },
-  head: ({ loaderData }) => {
+  head: ({ loaderData, params }) => {
     const p = loaderData?.project
     const title = p ? `${p.title} — Wohnungsbau-Tracker Berlin` : 'Projekt — Wohnungsbau-Tracker Berlin'
     const desc = p
       ? `${(STATUS_CHIP[p.status]?.label || p.status).toLowerCase()} in ${p.bezirk}${p.unitCount ? `, ${fmt(p.unitCount)} geplante Wohnungen` : ''}: ${(p.description || p.title).slice(0, 150)}`
       : 'Projektdetails im Wohnungsbau-Tracker Berlin.'
+    // Die Vorschaukarte wird pro Projekt gerendert (/og/<slug>.png) und zeigt
+    // Status, Bezirk, Titel und die Zahl der Wohnungen — der Slug enthält die
+    // ID, mehr braucht die Route nicht.
+    const slug = p ? projectSlug(p) : params.slug
+    const bild = absolut(`/og/${slug}.png`)
     return {
       meta: [
         { title },
@@ -70,8 +76,12 @@ export const Route = createFileRoute('/projekt/$slug')({
         { property: 'og:title', content: title },
         { property: 'og:description', content: desc },
         { property: 'og:type', content: 'article' },
+        { property: 'og:url', content: absolut(`/projekt/${slug}`) },
+        { property: 'og:image', content: bild },
+        { property: 'og:image:alt', content: p ? `${p.title} — ${p.bezirk}` : 'Wohnungsbau-Tracker Berlin' },
+        { name: 'twitter:image', content: bild },
       ],
-      links: ARCHIVO_FONT_LINKS,
+      links: [...ARCHIVO_FONT_LINKS, { rel: 'canonical', href: absolut(`/projekt/${slug}`) }],
     }
   },
   notFoundComponent: ProjectNotFound,

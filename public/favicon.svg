@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32" role="img" aria-label="Wohnungsbau-Tracker Berlin">
+  <title>Wohnungsbau-Tracker Berlin</title>
+  <!-- Kampagnenmarke „Lichter an": der Wohnblock aus dem Logo, auf Favicon-Größe
+       reduziert. Statt 3x4 Fenstern nur 3x3 — bei 16 px verschwimmt sonst alles. -->
+  <rect width="32" height="32" rx="6" fill="#0B2B6B"/>
+  <g fill="#02173A">
+    <rect x="3" y="3" width="6" height="6"/>
+    <rect x="13" y="3" width="6" height="6"/>
+    <rect x="3" y="13" width="6" height="6"/>
+    <rect x="13" y="13" width="6" height="6"/>
+    <rect x="23" y="13" width="6" height="6"/>
+    <rect x="13" y="23" width="6" height="6"/>
+    <rect x="23" y="23" width="6" height="6"/>
+  </g>
+  <g fill="#FFED00">
+    <rect x="23" y="3" width="6" height="6"/>
+    <rect x="3" y="23" width="6" height="6"/>
+  </g>
+</svg>

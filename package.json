@@ -9,10 +9,12 @@
     "dev": "vite dev --port 3000",
     "build": "vite build",
     "preview": "vite preview",
-    "test": "vitest run"
+    "test": "vitest run",
+    "icons": "bun run src/scripts/build-icons.ts"
   },
   "dependencies": {
     "@libsql/client": "^0.17.2",
+    "@resvg/resvg-wasm": "^2.6.2",
     "@tailwindcss/vite": "^4.1.18",
     "@tanstack/react-devtools": "latest",
     "@tanstack/react-router": "latest",

@@ -3,6 +3,7 @@ import { readFileSync, writeFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { dbPath } from '../db/path'
 import { requireAdmin } from './auth'
+import { seitenCacheLeeren } from './cache'
 
 const DB_PATH = resolve(dbPath)
 
@@ -25,6 +26,9 @@ export const importDb = createServerFn({ method: 'POST' }).handler(
     if (buffer.subarray(0, 6).toString() !== 'SQLite')
       throw new Error('Keine SQLite-Datei')
     writeFileSync(DB_PATH, buffer)
+    // Der Import tauscht den gesamten Datenbestand aus — hier ist das Leeren
+    // am wichtigsten, weil sonst jede Seite veraltet wäre.
+    await seitenCacheLeeren()
     return { success: true, size: buffer.length }
   },
 )

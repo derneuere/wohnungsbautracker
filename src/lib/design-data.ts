@@ -25,6 +25,47 @@ export type TrackerProject = {
   resolution?: string | null
 }
 
+/** Die Spalten, aus denen sich Listen, Karte und alle Kennzahlen berechnen —
+ *  und mehr lädt die Startseite auch nicht.
+ *
+ *  Vorher zog sie über `select()` jede Spalte: allein
+ *  politicalResponsibilityMeta (die Belege) sind über alle Projekte 415 KB, die
+ *  Beschreibungen weitere 149 KB. Beides wird auf der Startseite nirgends
+ *  gerendert, landete aber in jedem SSR-Durchlauf im Hydrations-Payload — 660
+ *  der 759 KB ausgelieferten HTML waren dieser eine Datensatz. Die Belege
+ *  gehören auf die Projektseite, die sie über ihren eigenen Loader holt.
+ *
+ *  Ein volles `TrackerProject` ist hierauf zuweisbar; die Helfer unten nehmen
+ *  deshalb beide Formen entgegen. */
+export type TrackerListProject = Pick<
+  TrackerProject,
+  | 'id'
+  | 'title'
+  | 'lat'
+  | 'lng'
+  | 'bezirk'
+  | 'status'
+  | 'unitCount'
+  | 'unitCountEstimate'
+  | 'unitCountEstimateMeta'
+  | 'blockers'
+>
+
+/** Spaltennamen aus TrackerListProject — damit die Query in projects.ts und
+ *  dieser Typ nicht auseinanderlaufen können. */
+export const LIST_COLUMNS = [
+  'id',
+  'title',
+  'lat',
+  'lng',
+  'bezirk',
+  'status',
+  'unitCount',
+  'unitCountEstimate',
+  'unitCountEstimateMeta',
+  'blockers',
+] as const satisfies ReadonlyArray<keyof TrackerListProject>
+
 export type EstimateMeta = {
   basis: 'dokumentiert' | 'abgeleitet' | 'keine_wohnnutzung' | 'nicht_bezifferbar'
   spanne?: [number, number]
@@ -37,7 +78,7 @@ export type EstimateMeta = {
   doppelt_mit?: number
 }
 
-export function parseEstimateMeta(p: TrackerProject): EstimateMeta | null {
+export function parseEstimateMeta(p: Pick<TrackerProject, 'unitCountEstimateMeta'>): EstimateMeta | null {
   if (!p.unitCountEstimateMeta) return null
   try {
     return JSON.parse(p.unitCountEstimateMeta)
@@ -48,7 +89,7 @@ export function parseEstimateMeta(p: TrackerProject): EstimateMeta | null {
 
 /** Summe der recherchierten Schätzungen für Projekte OHNE bestätigte WE-Zahl.
  *  Einträge, die dasselbe Bauvorhaben doppelt beschreiben (doppelt_mit), zählen nur einmal. */
-export function estimatedUnits(projects: TrackerProject[]): number {
+export function estimatedUnits(projects: TrackerListProject[]): number {
   return projects.reduce((sum, p) => {
     if (p.unitCount) return sum
     if (parseEstimateMeta(p)?.doppelt_mit) return sum
@@ -215,7 +256,7 @@ export function kanonischeParteien(text: string): string[] {
  *  Namen der partei-Blocker plus den partei-Tags der übrigen Blocker. Die
  *  party-Spalte wird bewusst nicht mehr gelesen — jede Partei in der Bilanz
  *  hat damit einen anzeigbaren Blocker auf der Projektseite. */
-export function splitParties(p: TrackerProject): string[] {
+export function splitParties(p: Pick<TrackerProject, 'blockers'>): string[] {
   const parteien: string[] = []
   visibleBlockers(p).forEach((b) => {
     const quelle = b.type === 'partei' ? b.name : b.partei ?? ''
@@ -226,7 +267,7 @@ export function splitParties(p: TrackerProject): string[] {
   return parteien
 }
 
-export function parseBlockers(p: TrackerProject): Blocker[] {
+export function parseBlockers(p: Pick<TrackerProject, 'blockers'>): Blocker[] {
   if (!p.blockers) return []
   try {
     const parsed = typeof p.blockers === 'string' ? JSON.parse(p.blockers) : p.blockers
@@ -241,7 +282,7 @@ export function parseBlockers(p: TrackerProject): Blocker[] {
 export const HIDDEN_BLOCKER_TYPES = new Set(['gericht'])
 
 /** Blocker eines Projekts ohne die ausgeblendeten Typen (z.B. Gerichte). */
-export function visibleBlockers(p: TrackerProject): Blocker[] {
+export function visibleBlockers(p: Pick<TrackerProject, 'blockers'>): Blocker[] {
   return parseBlockers(p).filter((b) => !HIDDEN_BLOCKER_TYPES.has(b.type))
 }
 
@@ -255,24 +296,24 @@ export function parsePressUrls(p: TrackerProject): PressUrl[] {
   }
 }
 
-export function totalUnits(projects: TrackerProject[]): number {
+export function totalUnits(projects: Pick<TrackerProject, 'unitCount'>[]): number {
   return projects.reduce((sum, p) => sum + (p.unitCount || 0), 0)
 }
 
 /** Vorhaben, die noch offen sind. Fertiggestellte bleiben im Tracker sichtbar —
  *  ihr Verzug ist die Aussage —, dürfen aber nicht zu den blockierten Wohnungen
  *  gezählt oder einer Partei als laufende Blockade angelastet werden. */
-export function offeneProjekte(projects: TrackerProject[]): TrackerProject[] {
+export function offeneProjekte<T extends Pick<TrackerProject, 'status'>>(projects: T[]): T[] {
   return projects.filter((p) => p.status !== 'erledigt')
 }
 
-export function erledigteProjekte(projects: TrackerProject[]): TrackerProject[] {
+export function erledigteProjekte<T extends Pick<TrackerProject, 'status'>>(projects: T[]): T[] {
   return projects.filter((p) => p.status === 'erledigt')
 }
 
 export type PartyRank = { party: string; projects: number; units: number }
 
-export function partyRanking(projects: TrackerProject[]): PartyRank[] {
+export function partyRanking(projects: Pick<TrackerProject, 'blockers' | 'unitCount'>[]): PartyRank[] {
   const map: Record<string, PartyRank> = {}
   projects.forEach((p) => {
     splitParties(p).forEach((party) => {
@@ -286,7 +327,9 @@ export function partyRanking(projects: TrackerProject[]): PartyRank[] {
 
 /** Zählbare WE eines Projekts: belegte Zahl, sonst quellengeprüfte Schätzung.
  *  Doppelt erfasste Vorhaben (doppelt_mit) zählen 0, damit Summen nicht doppelt zählen. */
-export function countableUnits(p: TrackerProject): number {
+export function countableUnits(
+  p: Pick<TrackerProject, 'unitCount' | 'unitCountEstimate' | 'unitCountEstimateMeta'>,
+): number {
   if (p.unitCount) return p.unitCount
   if (parseEstimateMeta(p)?.doppelt_mit) return 0
   return p.unitCountEstimate || 0
@@ -295,13 +338,16 @@ export function countableUnits(p: TrackerProject): number {
 /** WE-Zahl für die Anzeige-Reihenfolge: belegte Zahl, sonst Schätzung — anders als
  *  countableUnits auch bei doppelt erfassten Vorhaben, denn die Karte zeigt ihre
  *  Zahl ja an und soll deshalb an der passenden Stelle einsortiert werden. */
-export function sortableUnits(p: TrackerProject): number {
+export function sortableUnits(p: Pick<TrackerProject, 'unitCount' | 'unitCountEstimate'>): number {
   return p.unitCount || p.unitCountEstimate || 0
 }
 
 export type StatusBreakdown = { status: string; count: number; units: number }
 
-export function statusBreakdown(projects: TrackerProject[], includeEstimates = false): StatusBreakdown[] {
+export function statusBreakdown(
+  projects: TrackerListProject[],
+  includeEstimates = false,
+): StatusBreakdown[] {
   const order = ['blockiert', 'verzögert', 'abgelehnt', 'erledigt']
   const map: Record<string, StatusBreakdown> = {}
   projects.forEach((p) => {
@@ -314,7 +360,10 @@ export function statusBreakdown(projects: TrackerProject[], includeEstimates = f
 
 /** Unique non-party blocker names, most useful for tickers/lists.
  *  Ausgeblendete Typen (Gerichte) werden nicht aufgeführt. */
-export function uniqueBlockerNames(projects: TrackerProject[], excludeParties = true): string[] {
+export function uniqueBlockerNames(
+  projects: Pick<TrackerProject, 'blockers'>[],
+  excludeParties = true,
+): string[] {
   const seen = new Set<string>()
   projects.forEach((p) => {
     parseBlockers(p).forEach((b) => {
