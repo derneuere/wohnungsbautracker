@@ -112,10 +112,11 @@ function ProjectNotFound() {
 
 /** Die amtlichen Dokumente unter einem Beleg — eine Zeile je Drucksache.
  *
- *  Der Titel führt direkt aufs PDF, weil das das Dokument ist, um das es geht;
- *  in ALLRIS ist das zugleich die einzige dauerhaft zitierfähige Adresse. Die
- *  Beschlusslage steht in derselben Zeile, weil ein zurückgezogener Antrag
- *  sonst wie ein durchgesetzter aussieht. */
+ *  Der Titel führt aufs hier hinterlegte PDF, weil das das Dokument ist, um das
+ *  es geht — und weil ALLRIS keine von außen anklickbare Dokumentadresse hat
+ *  (siehe `Belegdokument`). „Vorgang" führt in das Ratsinformationssystem, das
+ *  geht. Die Beschlusslage steht in derselben Zeile, weil ein zurückgezogener
+ *  Antrag sonst wie ein durchgesetzter aussieht. */
 function Belegdokumente({ dokumente }: { dokumente: Belegdokument[] }) {
   return (
     <ul className="mt-1 space-y-1">
@@ -128,7 +129,7 @@ function Belegdokumente({ dokumente }: { dokumente: Belegdokument[] }) {
             target="_blank"
             rel="noopener noreferrer"
             className="font-bold text-black underline decoration-[#1CB5E5] hover:opacity-70"
-            title="PDF der Drucksache beim Herausgeber"
+            title="PDF der Drucksache — hier hinterlegte Kopie, öffnet im neuen Tab"
           >
             {d.nummer ? `${d.nummer} ${d.titel}` : d.titel} ↗
           </a>

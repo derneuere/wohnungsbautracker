@@ -112,11 +112,14 @@ export type Archiv = {
 
 /** Ein amtliches Dokument hinter einem Beleg — bei der BVV eine Drucksache.
  *
- *  `pdf` zeigt direkt auf das PDF beim Herausgeber; in ALLRIS ist das
- *  do027.asp?DOLFDNR=…&options=64, die einzige dauerhafte Dokumentadresse dort
- *  (die Anlagen hängen an sessiongebundenen Wegwerf-URLs und taugen nicht zum
- *  Zitieren). `ergebnis` nennt, was aus der Drucksache geworden ist — ein
- *  zurückgezogener Antrag belegt einen Blockadeversuch, keine Blockade. */
+ *  `pdf` ist die selbst hinterlegte Kopie unter /public, und das ist keine
+ *  Bequemlichkeit: auf die Dokumentadressen in ALLRIS kann man von außen nicht
+ *  zeigen. `do027.asp?DOLFDNR=…` liefert das PDF nur, wenn dieselbe Session
+ *  vorher die Vorgangsseite geladen hat — kalt angeklickt kommt „Keine
+ *  Information verfügbar"; die Anlagen hängen zusätzlich an
+ *  sessiongebundenen Wegwerf-Pfaden. `quelle` (die Vorgangsseite) funktioniert
+ *  dagegen von außen. `ergebnis` nennt, was aus der Drucksache geworden ist —
+ *  ein zurückgezogener Antrag belegt einen Blockadeversuch, keine Blockade. */
 export type Belegdokument = {
   /** Drucksachennummer, z. B. 'VIII-0299'. */
   nummer?: string | null
@@ -124,7 +127,7 @@ export type Belegdokument = {
   /** Beschlusslage im Wortlaut des Systems, z. B. 'in der BVV abgelehnt'. */
   ergebnis?: string | null
   datum?: string | null
-  /** Direktlink auf das PDF beim Herausgeber. */
+  /** Pfad der hier hinterlegten Kopie, z. B. '/belege/bvv-pankow/…pdf'. */
   pdf?: string | null
   /** Die Vorgangsseite im Ratsinformationssystem, mit Beratungsfolge. */
   quelle?: string | null
