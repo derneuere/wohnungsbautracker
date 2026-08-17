@@ -40,6 +40,7 @@ const BLOCKER_TYPE_LABEL: Record<string, string> = {
   gericht: 'Gericht',
   umwelt: 'Umwelt',
   investor: 'Investor',
+  verband: 'Verband',
 }
 
 export const Route = createFileRoute('/projekt/$slug')({

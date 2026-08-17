@@ -20,7 +20,7 @@ export const blockedProjects = sqliteTable('blocked_projects', {
   unitCountEstimate: int('unit_count_estimate'),
   // JSON: { basis: 'dokumentiert'|'abgeleitet'|'keine_wohnnutzung', spanne: [min,max], quellen: [{url, zitat}], confidence, begruendung, verifiziert, stand }
   unitCountEstimateMeta: text('unit_count_estimate_meta'),
-  blockers: text(), // JSON array of {name, type} — type: "partei"|"bürgerinitiative"|"behörde"|"gericht"|"umwelt"|"investor"
+  blockers: text(), // JSON array of {name, type} — type: "partei"|"bürgerinitiative"|"behörde"|"gericht"|"umwelt"|"investor"|"verband"
   // Ausgeblendet statt gelöscht: Projekte, bei denen die Recherche keine politische
   // oder verwaltungsseitige Ursache belegen konnte. Daten und Belege bleiben erhalten.
   hidden: integer({ mode: 'boolean' }).default(false),

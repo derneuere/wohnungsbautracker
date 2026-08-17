@@ -385,7 +385,7 @@ function ProjectForm({
             onChange={(e) => set('blockers', e.target.value)}
             rows={2}
             className={`${inputCls} font-mono text-xs ${blockersValid ? '' : 'border-red-500'}`}
-            placeholder='[{"name":"BI Beispielkiez","type":"bürgerinitiative"},{"name":"Bezirksamt X","type":"behörde","partei":"CDU"}] — Typen: partei, bürgerinitiative, behörde, gericht, umwelt, investor. Die Partei-Bilanz zählt partei-Blocker plus partei-Tags.'
+            placeholder='[{"name":"BI Beispielkiez","type":"bürgerinitiative"},{"name":"Bezirksamt X","type":"behörde","partei":"CDU"}] — Typen: partei, bürgerinitiative, behörde, gericht, umwelt, investor, verband. Die Partei-Bilanz zählt partei-Blocker plus partei-Tags.'
           />
         </div>
         <div className="sm:col-span-2">
