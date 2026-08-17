@@ -42,14 +42,6 @@ function Adresse({ children }: { children: React.ReactNode }) {
   )
 }
 
-/** Noch zu klärende Angabe — bewusst auffällig, damit sie nicht übersehen wird. */
-function Platzhalter({ children }: { children: React.ReactNode }) {
-  return (
-    <span className="font-black" style={{ backgroundColor: YELLOW, padding: '0 0.25rem' }}>
-      {children}
-    </span>
-  )
-}
 
 const linkStil = 'font-bold text-black underline decoration-[#1CB5E5] hover:opacity-70'
 
@@ -130,7 +122,8 @@ function ImpressumPage() {
           </Absatz>
           <Absatz>
             Betrieben wird die Seite als eigene Anwendung in einem Container (Docker, verwaltet
-            über Coolify) bei <Platzhalter>[Hosting-Anbieter, Ort]</Platzhalter>. Ein
+            über Coolify) auf einem Server der Hetzner Online GmbH im Rechenzentrum
+            Falkenstein (Sachsen). Ein
             Content-Management-System, eine Agentur oder ein Baukasten stecken nicht dahinter.
           </Absatz>
           <Absatz>

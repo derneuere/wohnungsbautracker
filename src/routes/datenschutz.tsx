@@ -42,14 +42,6 @@ function Adresse({ children }: { children: React.ReactNode }) {
   )
 }
 
-/** Noch zu klärende Angabe — bewusst auffällig, damit sie nicht übersehen wird. */
-function Platzhalter({ children }: { children: React.ReactNode }) {
-  return (
-    <span className="font-black" style={{ backgroundColor: YELLOW, padding: '0 0.25rem' }}>
-      {children}
-    </span>
-  )
-}
 
 function Liste({ punkte }: { punkte: React.ReactNode[] }) {
   return (
@@ -167,8 +159,7 @@ function DatenschutzPage() {
             sicheren und fehlerfreien Betrieb (Art. 6 Abs. 1 lit. f DSGVO).
           </Absatz>
           <Absatz>
-            Die Protokolle werden kurzfristig gespeichert und danach gelöscht — derzeit{' '}
-            <Platzhalter>[Speicherdauer der Logs]</Platzhalter>. Sie werden nicht mit anderen Daten
+            Die Protokolle werden nach sieben Tagen gelöscht. Sie werden nicht mit anderen Daten
             zusammengeführt und nicht dazu genutzt, das Verhalten einzelner Personen auszuwerten.
             Eine Ausnahme gilt nur, wenn ein konkreter Vorfall — etwa ein Angriff — die Aufbewahrung
             bis zu dessen Klärung erfordert.
@@ -181,8 +172,9 @@ function DatenschutzPage() {
 
         <Abschnitt titel="Hosting">
           <Absatz>
-            Die Website läuft auf gemieteter Infrastruktur bei{' '}
-            <Platzhalter>[Hosting-Anbieter, Ort]</Platzhalter>. Der Anbieter verarbeitet die oben
+            Die Website läuft auf gemieteter Infrastruktur der Hetzner Online GmbH,
+            Industriestr. 25, 91710 Gunzenhausen, im Rechenzentrum Falkenstein (Deutschland). Der
+            Anbieter verarbeitet die oben
             genannten Verbindungsdaten in unserem Auftrag; dafür besteht ein Vertrag zur
             Auftragsverarbeitung nach Art. 28 DSGVO. Weitere Dienstleister sind nicht eingebunden.
           </Absatz>
