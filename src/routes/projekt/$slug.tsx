@@ -600,22 +600,18 @@ function ProjectDetailPage() {
           Permalink: /projekt/{projectSlug(p)}
         </p>
         <div className="mx-auto mt-8 flex max-w-4xl flex-wrap items-center justify-center gap-x-6 gap-y-2 border-t border-white/10 pt-6">
-          <a
-            href="https://julis.berlin/impressum/"
-            target="_blank"
-            rel="noopener noreferrer"
+          <Link
+            to="/impressum"
             className="text-[11px] font-black uppercase tracking-[0.2em] text-white/50 no-underline transition-colors hover:text-white"
           >
             Impressum
-          </a>
-          <a
-            href="https://julis.berlin/datenschutz/"
-            target="_blank"
-            rel="noopener noreferrer"
+          </Link>
+          <Link
+            to="/datenschutz"
             className="text-[11px] font-black uppercase tracking-[0.2em] text-white/50 no-underline transition-colors hover:text-white"
           >
             Datenschutz
-          </a>
+          </Link>
           <Link
             to="/lizenzen"
             className="text-[11px] font-black uppercase tracking-[0.2em] text-white/50 no-underline transition-colors hover:text-white"
