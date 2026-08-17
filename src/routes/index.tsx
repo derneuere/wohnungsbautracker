@@ -560,37 +560,31 @@ function KampagnePage() {
             Rückmeldung zu Einordnung und Kontext, korrigieren Fehler und geben jeden Text frei.
             Der Mensch entscheidet, die Maschine recherchiert. Fehler trotzdem gefunden?
             Wir korrigieren sie — Kontakt über das{' '}
-            <a
-              href="https://julis.berlin/impressum/"
-              target="_blank"
-              rel="noopener noreferrer"
+            <Link
+              to="/impressum"
               className="underline decoration-2 underline-offset-2 hover:text-white/80"
               style={{ color: CYAN }}
             >
               Impressum
-            </a>
+            </Link>
             .
           </p>
         </div>
 
         {/* Rechtliches */}
         <div className="mx-auto mt-12 flex max-w-4xl flex-wrap items-center justify-center gap-x-6 gap-y-2 border-t border-white/10 pt-6">
-          <a
-            href="https://julis.berlin/impressum/"
-            target="_blank"
-            rel="noopener noreferrer"
+          <Link
+            to="/impressum"
             className="text-[11px] font-black uppercase tracking-[0.2em] text-white/50 no-underline transition-colors hover:text-white"
           >
             Impressum
-          </a>
-          <a
-            href="https://julis.berlin/datenschutz/"
-            target="_blank"
-            rel="noopener noreferrer"
+          </Link>
+          <Link
+            to="/datenschutz"
             className="text-[11px] font-black uppercase tracking-[0.2em] text-white/50 no-underline transition-colors hover:text-white"
           >
             Datenschutz
-          </a>
+          </Link>
           <Link
             to="/lizenzen"
             className="text-[11px] font-black uppercase tracking-[0.2em] text-white/50 no-underline transition-colors hover:text-white"

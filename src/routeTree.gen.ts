@@ -10,6 +10,8 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as LizenzenRouteImport } from './routes/lizenzen'
+import { Route as ImpressumRouteImport } from './routes/impressum'
+import { Route as DatenschutzRouteImport } from './routes/datenschutz'
 import { Route as AdminRouteRouteImport } from './routes/admin/route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AdminIndexRouteImport } from './routes/admin/index'
@@ -21,6 +23,16 @@ import { Route as AdminBvvRouteImport } from './routes/admin/bvv'
 const LizenzenRoute = LizenzenRouteImport.update({
   id: '/lizenzen',
   path: '/lizenzen',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ImpressumRoute = ImpressumRouteImport.update({
+  id: '/impressum',
+  path: '/impressum',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DatenschutzRoute = DatenschutzRouteImport.update({
+  id: '/datenschutz',
+  path: '/datenschutz',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminRouteRoute = AdminRouteRouteImport.update({
@@ -62,6 +74,8 @@ const AdminBvvRoute = AdminBvvRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteRouteWithChildren
+  '/datenschutz': typeof DatenschutzRoute
+  '/impressum': typeof ImpressumRoute
   '/lizenzen': typeof LizenzenRoute
   '/admin/bvv': typeof AdminBvvRoute
   '/admin/stats': typeof AdminStatsRoute
@@ -71,6 +85,8 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/datenschutz': typeof DatenschutzRoute
+  '/impressum': typeof ImpressumRoute
   '/lizenzen': typeof LizenzenRoute
   '/admin/bvv': typeof AdminBvvRoute
   '/admin/stats': typeof AdminStatsRoute
@@ -82,6 +98,8 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteRouteWithChildren
+  '/datenschutz': typeof DatenschutzRoute
+  '/impressum': typeof ImpressumRoute
   '/lizenzen': typeof LizenzenRoute
   '/admin/bvv': typeof AdminBvvRoute
   '/admin/stats': typeof AdminStatsRoute
@@ -94,6 +112,8 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/admin'
+    | '/datenschutz'
+    | '/impressum'
     | '/lizenzen'
     | '/admin/bvv'
     | '/admin/stats'
@@ -103,6 +123,8 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/datenschutz'
+    | '/impressum'
     | '/lizenzen'
     | '/admin/bvv'
     | '/admin/stats'
@@ -113,6 +135,8 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/admin'
+    | '/datenschutz'
+    | '/impressum'
     | '/lizenzen'
     | '/admin/bvv'
     | '/admin/stats'
@@ -124,6 +148,8 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AdminRouteRoute: typeof AdminRouteRouteWithChildren
+  DatenschutzRoute: typeof DatenschutzRoute
+  ImpressumRoute: typeof ImpressumRoute
   LizenzenRoute: typeof LizenzenRoute
   OgSlugDotpngRoute: typeof OgSlugDotpngRoute
   ProjektSlugRoute: typeof ProjektSlugRoute
@@ -136,6 +162,20 @@ declare module '@tanstack/react-router' {
       path: '/lizenzen'
       fullPath: '/lizenzen'
       preLoaderRoute: typeof LizenzenRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/impressum': {
+      id: '/impressum'
+      path: '/impressum'
+      fullPath: '/impressum'
+      preLoaderRoute: typeof ImpressumRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/datenschutz': {
+      id: '/datenschutz'
+      path: '/datenschutz'
+      fullPath: '/datenschutz'
+      preLoaderRoute: typeof DatenschutzRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin': {
@@ -209,6 +249,8 @@ const AdminRouteRouteWithChildren = AdminRouteRoute._addFileChildren(
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRouteRoute: AdminRouteRouteWithChildren,
+  DatenschutzRoute: DatenschutzRoute,
+  ImpressumRoute: ImpressumRoute,
   LizenzenRoute: LizenzenRoute,
   OgSlugDotpngRoute: OgSlugDotpngRoute,
   ProjektSlugRoute: ProjektSlugRoute,

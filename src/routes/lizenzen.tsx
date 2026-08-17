@@ -227,14 +227,12 @@ function LizenzenPage() {
           <p className="mt-3 text-sm font-medium leading-relaxed text-black/70">
             Wenn eine Quelle fehlt, eine Lizenz falsch benannt ist oder Inhalte hier zu Unrecht
             verwendet werden, melde es bitte über das{' '}
-            <a
-              href="https://julis.berlin/impressum/"
-              target="_blank"
-              rel="noopener noreferrer"
+            <Link
+              to="/impressum"
               className="font-bold text-black underline decoration-[#1CB5E5] hover:opacity-70"
             >
               Impressum
-            </a>
+            </Link>
             . Wir korrigieren das.
           </p>
         </div>
@@ -249,22 +247,18 @@ function LizenzenPage() {
           Zur Projektwand
         </Link>
         <div className="mx-auto mt-8 flex max-w-4xl flex-wrap items-center justify-center gap-x-6 gap-y-2 border-t border-white/10 pt-6">
-          <a
-            href="https://julis.berlin/impressum/"
-            target="_blank"
-            rel="noopener noreferrer"
+          <Link
+            to="/impressum"
             className="text-[11px] font-black uppercase tracking-[0.2em] text-white/50 no-underline transition-colors hover:text-white"
           >
             Impressum
-          </a>
-          <a
-            href="https://julis.berlin/datenschutz/"
-            target="_blank"
-            rel="noopener noreferrer"
+          </Link>
+          <Link
+            to="/datenschutz"
             className="text-[11px] font-black uppercase tracking-[0.2em] text-white/50 no-underline transition-colors hover:text-white"
           >
             Datenschutz
-          </a>
+          </Link>
           <span className="text-[11px] font-black uppercase tracking-[0.2em]" style={{ color: CYAN }}>
             Lizenzen
           </span>
