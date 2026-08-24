@@ -23,7 +23,7 @@ import { SITE_URL } from '../lib/site'
 import BerlinSvgMap from '../components/BerlinSvgMap'
 import WbtLogo from '../components/WbtLogo'
 
-const TITEL = 'Wohnungsbau-Tracker Berlin — Wo blockiert wird, ist nichts möglich.'
+const TITEL = 'Wohnungsbau-Tracker Berlin: Wo blockiert wird, ist nichts möglich.'
 const BESCHREIBUNG =
   'Welche Akteure blockieren den Wohnungsbau in Berlin? Alle blockierten, verzögerten und abgelehnten Neubauprojekte, mit Quellen.'
 
