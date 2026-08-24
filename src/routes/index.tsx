@@ -547,10 +547,10 @@ function KampagnePage() {
               Projekttexten — jede Zahl und jede Aussage bleibt dabei an einen Beleg gebunden.
             </li>
             <li>
-              <span className="font-black text-white/70">Menschen prüfen:</span> Mitglieder des
-              Programmatik-Teams der Jungen Liberalen Berlin schauen als Human in the Loop
-              drüber — sie geben Rückmeldung zu Einordnung und Kontext, korrigieren Fehler und
-              geben jeden Text frei.
+              <span className="font-black text-white/70">Menschen prüfen:</span> Eine
+              Arbeitsgruppe der Jungen Liberalen Berlin schaut als Human in the Loop
+              drüber — sie gibt Rückmeldung zu Einordnung und Kontext, korrigiert Fehler und
+              gibt jeden Text frei.
             </li>
           </ol>
           <p className="mt-2 text-xs font-semibold leading-relaxed text-white/50">
