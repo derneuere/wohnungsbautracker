@@ -25,7 +25,7 @@ import WbtLogo from '../components/WbtLogo'
 
 const TITEL = 'Wohnungsbau-Tracker Berlin — Wo blockiert wird, ist nichts möglich.'
 const BESCHREIBUNG =
-  'Welche Akteure blockieren den Wohnungsbau in Berlin? Alle blockierten, verzögerten und abgelehnten Neubauprojekte — mit Quellen.'
+  'Welche Akteure blockieren den Wohnungsbau in Berlin? Alle blockierten, verzögerten und abgelehnten Neubauprojekte, mit Quellen.'
 
 export const Route = createFileRoute('/')({
   head: () => ({
@@ -288,7 +288,7 @@ function KampagnePage() {
               </span>
             </div>
             <p className="mx-auto mt-3 max-w-md text-center text-[11px] font-semibold text-white/40">
-              Wohnungen im Land Berlin je Jahr — Quelle: Amt für Statistik Berlin-Brandenburg.
+              Wohnungen im Land Berlin je Jahr. Quelle: Amt für Statistik Berlin-Brandenburg.
             </p>
           </div>
         )}
@@ -321,7 +321,7 @@ function KampagnePage() {
           </h2>
           <p className="mt-4 max-w-xl text-base font-semibold text-black/70">
             Parteien, die laut Drucksachen an Blockaden, Verzögerungen und Ablehnungen
-            beteiligt waren — gemessen an den betroffenen Wohneinheiten.
+            beteiligt waren, gemessen an den betroffenen Wohneinheiten.
           </p>
 
           <div className="mt-12">
@@ -358,7 +358,7 @@ function KampagnePage() {
           </div>
 
           <p className="mt-4 text-xs font-semibold text-black/40">
-            Mehrfachnennungen möglich — an einem Projekt sind oft mehrere Parteien beteiligt.
+            Mehrfachnennungen möglich: An einem Projekt sind oft mehrere Parteien beteiligt.
           </p>
         </div>
       </section>
@@ -371,7 +371,7 @@ function KampagnePage() {
             Überall in der Stadt.
           </h2>
           <p className="mt-4 max-w-xl text-base font-semibold text-white/70">
-            Alle {fmt(projects.length)} Vorhaben — Bezirk antippen, dann Projekt wählen.
+            Alle {fmt(projects.length)} Vorhaben. Bezirk antippen, dann Projekt wählen.
           </p>
           <div className="mx-auto mt-10 max-w-4xl">
             <BerlinSvgMap
@@ -499,7 +499,7 @@ function KampagnePage() {
         </h2>
         <p className="mx-auto mt-6 max-w-xl text-sm font-semibold leading-relaxed text-white/60">
           Dieses Projekt dokumentiert, welche Akteure den Berliner Wohnungsbau auf
-          Bezirksebene bremsen — Drucksache für Drucksache. Alle Zahlen sind echt.
+          Bezirksebene bremsen, Drucksache für Drucksache. Alle Zahlen sind echt.
           Die Bildsprache ist eine Hommage an deutsche Wahlkampagnen; die Slogans sind geliehen.
         </p>
 
@@ -508,7 +508,7 @@ function KampagnePage() {
           <div className="border-t-2 pt-4" style={{ borderColor: CYAN }}>
             <h3 className="text-[11px] font-black uppercase tracking-[0.2em] text-white/70">Belegte Zahlen</h3>
             <p className="mt-2 text-xs font-semibold leading-relaxed text-white/50">
-              Wohneinheiten stammen aus BVV-Drucksachen und dem Pressespiegel — jede Zahl
+              Wohneinheiten stammen aus BVV-Drucksachen und dem Pressespiegel. Jede Zahl
               ist auf der Projektseite mit Quelle verlinkt.
             </p>
           </div>
@@ -537,25 +537,25 @@ function KampagnePage() {
           <ol className="mt-2 list-decimal space-y-2 pl-4 text-xs font-semibold leading-relaxed text-white/50">
             <li>
               <span className="font-black text-white/70">Quellen laden:</span> Wir sammeln die
-              Dateiquellen — BVV-Drucksachen und Sitzungsprotokolle aus den
+              Dateiquellen, also BVV-Drucksachen und Sitzungsprotokolle aus den
               Ratsinformationssystemen der Bezirke, Pressemitteilungen, Berichterstattung und
               amtliche Statistik.
             </li>
             <li>
               <span className="font-black text-white/70">Mit KI auswerten:</span> Agent-Workflows
               mit Claude Opus werten die Quellen aus, strukturieren sie und verdichten sie zu den
-              Projekttexten — jede Zahl und jede Aussage bleibt dabei an einen Beleg gebunden.
+              Projekttexten. Jede Zahl und jede Aussage bleibt dabei an einen Beleg gebunden.
             </li>
             <li>
               <span className="font-black text-white/70">Menschen prüfen:</span> Eine
               Arbeitsgruppe der Jungen Liberalen Berlin schaut als Human in the Loop
-              drüber — sie gibt Rückmeldung zu Einordnung und Kontext, korrigiert Fehler und
+              drüber: Sie gibt Rückmeldung zu Einordnung und Kontext, korrigiert Fehler und
               gibt jeden Text frei.
             </li>
           </ol>
           <p className="mt-2 text-xs font-semibold leading-relaxed text-white/50">
             Der Mensch entscheidet, die Maschine recherchiert. Fehler trotzdem gefunden?
-            Wir korrigieren sie — Kontakt über das{' '}
+            Wir korrigieren sie. Kontakt über das{' '}
             <Link
               to="/impressum"
               className="underline decoration-2 underline-offset-2 hover:text-white/80"
