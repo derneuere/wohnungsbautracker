@@ -623,15 +623,18 @@ function ProjectDetailPage() {
           >
             Lizenzen & Quellen
           </Link>
+        </div>
+        <p className="mt-6 text-[11px] font-black uppercase tracking-[0.2em] text-white/40">
+          Eine Initiative der{' '}
           <a
             href="https://julis.berlin/"
             target="_blank"
             rel="noopener noreferrer"
-            className="text-[11px] font-black uppercase tracking-[0.2em] text-white/50 no-underline transition-colors hover:text-white"
+            className="text-white/70 no-underline transition-colors hover:text-white"
           >
-            Junge Liberale Berlin
+            Jungen Liberalen Berlin
           </a>
-        </div>
+        </p>
       </footer>
     </div>
   )

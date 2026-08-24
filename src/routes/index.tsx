@@ -101,6 +101,15 @@ function KampagnePage() {
     () => PARTIES.filter((p) => !parteiBilanz.some((r) => r.party === p)),
     [parteiBilanz],
   )
+  // Die FDP steht ohne Blockade nicht als eigene Kachel daneben, sondern als
+  // normale Zeile mit 0 Wohnungen in der Bilanz.
+  const bilanzZeilen = useMemo(
+    () =>
+      ohneBlockade.includes('FDP')
+        ? [...ranking, { party: 'FDP', units: 0, projects: 0 }]
+        : ranking,
+    [ranking, ohneBlockade],
+  )
   const blockerNames = useMemo(() => uniqueBlockerNames(offen).slice(0, 18), [offen])
   const serie = useMemo(() => cityYearSeries(stats), [stats])
 
@@ -316,7 +325,7 @@ function KampagnePage() {
           </p>
 
           <div className="mt-12">
-            {ranking.map((r, i) => (
+            {bilanzZeilen.map((r, i) => (
               <div key={r.party} className="border-t-4 py-6" style={{ borderColor: BLACK }}>
                 <div className="flex flex-wrap items-center gap-x-6 gap-y-3">
                   <span className="w-10 shrink-0 text-black/30" style={{ ...display, fontSize: '1.6rem' }}>{i + 1}</span>
@@ -324,13 +333,15 @@ function KampagnePage() {
                     {r.party}
                   </span>
                   <div className="h-9 min-w-[2rem] flex-1">
-                    <div
-                      className="flex h-9 items-center"
-                      style={{
-                        width: `${Math.max(4, (r.units / maxRank) * 100)}%`,
-                        backgroundColor: PARTY_COLORS[r.party] || '#999',
-                      }}
-                    />
+                    {r.units > 0 && (
+                      <div
+                        className="flex h-9 items-center"
+                        style={{
+                          width: `${Math.max(4, (r.units / maxRank) * 100)}%`,
+                          backgroundColor: PARTY_COLORS[r.party] || '#999',
+                        }}
+                      />
+                    )}
                   </div>
                   <div className="text-right">
                     <span className="px-3 py-1 tabular-nums" style={{ ...display, backgroundColor: BLUE, color: YELLOW, fontSize: '1.4rem' }}>
@@ -345,33 +356,6 @@ function KampagnePage() {
             ))}
             <div className="border-t-4" style={{ borderColor: BLACK }} />
           </div>
-
-          {ohneBlockade.includes('FDP') && (
-            <div
-              className="mt-10 border-4 px-6 py-8 sm:px-10"
-              style={{ borderColor: BLACK, backgroundColor: PARTY_COLORS.FDP }}
-            >
-              <div className="flex flex-wrap items-center gap-x-10 gap-y-4">
-                <span
-                  className="tabular-nums"
-                  style={{ ...display, color: BLACK, fontSize: 'clamp(4rem, 14vw, 8rem)', lineHeight: 0.85 }}
-                >
-                  0
-                </span>
-                <div className="max-w-md">
-                  <div style={{ ...display, color: BLACK, fontSize: 'clamp(1.6rem, 4vw, 2.6rem)', lineHeight: 1 }}>
-                    FDP
-                  </div>
-                  <p className="mt-3 text-base font-bold leading-snug text-black/70">
-                    Keine einzige Blockade in den ausgewerteten Drucksachen —
-                    {ohneBlockade.length === 1
-                      ? ' als einzige Partei im Tracker.'
-                      : ' kein Vorhaben, keine Verzögerung, keine Ablehnung.'}
-                  </p>
-                </div>
-              </div>
-            </div>
-          )}
 
           <p className="mt-4 text-xs font-semibold text-black/40">
             Mehrfachnennungen möglich — an einem Projekt sind oft mehrere Parteien beteiligt.
@@ -550,14 +534,26 @@ function KampagnePage() {
         {/* Wie der Tracker entsteht */}
         <div className="mx-auto mt-8 max-w-4xl border-t-2 pt-4 text-left" style={{ borderColor: CYAN }}>
           <h3 className="text-[11px] font-black uppercase tracking-[0.2em] text-white/70">So arbeiten wir</h3>
+          <ol className="mt-2 list-decimal space-y-2 pl-4 text-xs font-semibold leading-relaxed text-white/50">
+            <li>
+              <span className="font-black text-white/70">Quellen laden:</span> Wir sammeln die
+              Dateiquellen — BVV-Drucksachen und Sitzungsprotokolle aus den
+              Ratsinformationssystemen der Bezirke, Pressemitteilungen, Berichterstattung und
+              amtliche Statistik.
+            </li>
+            <li>
+              <span className="font-black text-white/70">Mit KI auswerten:</span> Agent-Workflows
+              mit Claude Opus werten die Quellen aus, strukturieren sie und verdichten sie zu den
+              Projekttexten — jede Zahl und jede Aussage bleibt dabei an einen Beleg gebunden.
+            </li>
+            <li>
+              <span className="font-black text-white/70">Menschen prüfen:</span> Mitglieder des
+              Programmatik-Teams der Jungen Liberalen Berlin schauen als Human in the Loop
+              drüber — sie geben Rückmeldung zu Einordnung und Kontext, korrigieren Fehler und
+              geben jeden Text frei.
+            </li>
+          </ol>
           <p className="mt-2 text-xs font-semibold leading-relaxed text-white/50">
-            Grundlage sind öffentliche Quellen: BVV-Drucksachen und Sitzungsprotokolle aus den
-            Ratsinformationssystemen der Bezirke, Pressemitteilungen, Berichterstattung und
-            amtliche Statistik. Diese Quellen werden in KI-gestützten Workflows (Claude Opus)
-            ausgewertet, strukturiert und zu den Projekttexten verdichtet — jede Zahl und jede
-            Aussage bleibt dabei an einen Beleg gebunden. Vor der Veröffentlichung prüfen
-            Fachleute aus Kommunal- und Wohnungspolitik die Einträge gegen: Sie geben
-            Rückmeldung zu Einordnung und Kontext, korrigieren Fehler und geben jeden Text frei.
             Der Mensch entscheidet, die Maschine recherchiert. Fehler trotzdem gefunden?
             Wir korrigieren sie — Kontakt über das{' '}
             <a
@@ -597,15 +593,18 @@ function KampagnePage() {
           >
             Lizenzen & Quellen
           </Link>
+        </div>
+        <p className="mt-6 text-[11px] font-black uppercase tracking-[0.2em] text-white/40">
+          Eine Initiative der{' '}
           <a
             href="https://julis.berlin/"
             target="_blank"
             rel="noopener noreferrer"
-            className="text-[11px] font-black uppercase tracking-[0.2em] text-white/50 no-underline transition-colors hover:text-white"
+            className="text-white/70 no-underline transition-colors hover:text-white"
           >
-            Junge Liberale Berlin
+            Jungen Liberalen Berlin
           </a>
-        </div>
+        </p>
 
       </footer>
 
