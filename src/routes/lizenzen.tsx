@@ -263,6 +263,17 @@ function LizenzenPage() {
             Lizenzen
           </span>
         </div>
+        <p className="mt-6 text-[11px] font-black uppercase tracking-[0.2em] text-white/40">
+          Eine Initiative der{' '}
+          <a
+            href="https://julis.berlin/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-white/70 no-underline transition-colors hover:text-white"
+          >
+            Jungen Liberalen Berlin
+          </a>
+        </p>
       </footer>
     </div>
   )
