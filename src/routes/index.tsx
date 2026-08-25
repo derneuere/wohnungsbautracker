@@ -321,7 +321,8 @@ function KampagnePage() {
           </h2>
           <p className="mt-4 max-w-xl text-base font-semibold text-black/70">
             Parteien, die laut Drucksachen an Blockaden, Verzögerungen und Ablehnungen
-            beteiligt waren, gemessen an den betroffenen Wohneinheiten.
+            beteiligt waren, gemessen an den betroffenen Wohneinheiten — belegte
+            Zahlen plus quellengeprüfte Schätzungen.
           </p>
 
           <div className="mt-12">
@@ -359,6 +360,8 @@ function KampagnePage() {
 
           <p className="mt-4 text-xs font-semibold text-black/40">
             Mehrfachnennungen möglich: An einem Projekt sind oft mehrere Parteien beteiligt.
+            Wo keine belegte Wohnungszahl vorliegt, zählt die quellengeprüfte Schätzung
+            (etwa die rund 4.700 Wohnungen des gestoppten Masterplans fürs Tempelhofer Feld).
           </p>
         </div>
       </section>

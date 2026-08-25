@@ -316,13 +316,15 @@ export function erledigteProjekte<T extends Pick<TrackerProject, 'status'>>(proj
 
 export type PartyRank = { party: string; projects: number; units: number }
 
-export function partyRanking(projects: Pick<TrackerProject, 'blockers' | 'unitCount'>[]): PartyRank[] {
+export function partyRanking(
+  projects: Pick<TrackerProject, 'blockers' | 'unitCount' | 'unitCountEstimate' | 'unitCountEstimateMeta'>[],
+): PartyRank[] {
   const map: Record<string, PartyRank> = {}
   projects.forEach((p) => {
     splitParties(p).forEach((party) => {
       if (!map[party]) map[party] = { party, projects: 0, units: 0 }
       map[party].projects += 1
-      map[party].units += p.unitCount || 0
+      map[party].units += countableUnits(p)
     })
   })
   return Object.values(map).sort((a, b) => b.units - a.units || b.projects - a.projects)
