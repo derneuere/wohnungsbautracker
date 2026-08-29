@@ -34,11 +34,13 @@ const staticCache = (sekunden: number) =>
 // `dangerouslySetInnerHTML` ohnehin keinen Einschleusweg.
 const csp = [
   "default-src 'self'",
-  "script-src 'self' 'unsafe-inline'",
+  // Einzige fremde Herkunft: die eigene GoatCounter-Instanz. script-src lädt
+  // count.js, connect-src deckt den sendBeacon-Zähltreffer an /count ab.
+  "script-src 'self' 'unsafe-inline' https://stats.wohnungsbautracker.de",
   "style-src 'self' 'unsafe-inline'",
-  "img-src 'self' data:",
+  "img-src 'self' data: https://stats.wohnungsbautracker.de",
   "font-src 'self'",
-  "connect-src 'self'",
+  "connect-src 'self' https://stats.wohnungsbautracker.de",
   "object-src 'none'",
   "base-uri 'self'",
   "form-action 'self'",
