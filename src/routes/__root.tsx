@@ -1,4 +1,5 @@
-import { HeadContent, Outlet, Scripts, createRootRoute, Link, useRouterState } from '@tanstack/react-router'
+import { HeadContent, Outlet, Scripts, createRootRoute, Link, useRouter, useRouterState } from '@tanstack/react-router'
+import { useEffect } from 'react'
 import appCss from '../styles.css?url'
 import WbtLogo from '../components/WbtLogo'
 import { BLUE, YELLOW } from '../lib/campaign'
@@ -56,8 +57,36 @@ function RootLayout() {
         {isAdmin && <AdminHeader />}
         <Outlet />
         <Scripts />
+        <GoatCounter />
       </body>
     </html>
+  )
+}
+
+// Selbstgehostete, cookiefreie Statistik (stats.wohnungsbautracker.de).
+// count.js zählt nur den initialen Seitenaufruf; Client-Navigationen der SPA
+// müssen deshalb per Router-Subscription nachgemeldet werden. Admin-Seiten
+// werden nicht gezählt, localhost ignoriert count.js von selbst.
+function GoatCounter() {
+  const router = useRouter()
+
+  useEffect(() => {
+    return router.subscribe('onResolved', ({ fromLocation, toLocation }) => {
+      if (!fromLocation || fromLocation.href === toLocation.href) return
+      if (toLocation.pathname.startsWith('/admin')) return
+      ;(window as any).goatcounter?.count?.({ path: toLocation.pathname + toLocation.searchStr })
+    })
+  }, [router])
+
+  const pathname = useRouterState({ select: (s) => s.location.pathname })
+  if (pathname.startsWith('/admin')) return null
+
+  return (
+    <script
+      data-goatcounter="https://stats.wohnungsbautracker.de/count"
+      async
+      src="https://stats.wohnungsbautracker.de/count.js"
+    />
   )
 }
 

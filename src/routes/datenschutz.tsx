@@ -9,7 +9,7 @@ export const Route = createFileRoute('/datenschutz')({
       {
         name: 'description',
         content:
-          'Welche Daten beim Besuch des Wohnungsbau-Trackers anfallen — und welche nicht. Keine Analyse-Tools, keine Cookies für Besucher, keine externen Dienste.',
+          'Welche Daten beim Besuch des Wohnungsbau-Trackers anfallen — und welche nicht. Keine Cookies für Besucher, keine externen Dienste, nur eine selbst betriebene Besucherstatistik.',
       },
     ],
     links: ARCHIVO_FONT_LINKS,
@@ -71,8 +71,9 @@ function DatenschutzPage() {
           </h1>
           <p className="mt-4 max-w-xl text-sm font-semibold leading-relaxed text-white/70">
             Diese Erklärung beschreibt nur, was diese Website tatsächlich tut. Das ist erfreulich
-            wenig: keine Analyse-Werkzeuge, keine Cookies für Besucherinnen und Besucher, keine
-            Inhalte von fremden Servern.
+            wenig: keine Cookies für Besucherinnen und Besucher, keine Dienste von Dritten — und
+            eine Besucherstatistik, die wir selbst betreiben, ohne einzelne Personen
+            wiederzuerkennen.
           </p>
         </div>
       </header>
@@ -87,9 +88,9 @@ function DatenschutzPage() {
           <Absatz>Was diese Website nicht tut:</Absatz>
           <Liste
             punkte={[
-              'Keine Analyse- oder Tracking-Werkzeuge (kein Google Analytics, kein Matomo, kein Plausible, keine Zählpixel).',
+              'Keine fremden Analyse- oder Tracking-Dienste (kein Google Analytics, kein Matomo-Cloud, kein Plausible). Die Besucherstatistik betreiben wir selbst — cookiefrei und ohne Wiedererkennung einzelner Personen, Einzelheiten im Abschnitt „Besucherstatistik“.',
               'Keine Werbung, kein Profiling, keine Weitergabe von Daten zu Werbezwecken.',
-              'Keine Skripte, Schriften, Karten oder Bilder von fremden Servern — alles wird von diesem Server ausgeliefert.',
+              'Keine Skripte, Schriften, Karten oder Bilder von fremden Servern — alles wird von unseren eigenen Servern ausgeliefert, auch die Statistik unter stats.wohnungsbautracker.de.',
               'Keine Social-Media-Plugins, keine „Gefällt mir“-Buttons, keine eingebetteten Videos.',
               'Kein Newsletter, kein Shop, kein Spenden- oder Mitgliedsformular, kein Kontaktformular, kein reCAPTCHA.',
               'Keine Cookies und kein Local Storage für normale Besuche.',
@@ -97,7 +98,8 @@ function DatenschutzPage() {
           />
           <Absatz>
             Der Server erzwingt das zusätzlich technisch: Eine Content-Security-Policy erlaubt dem
-            Browser ausschließlich Verbindungen zu dieser Seite selbst.
+            Browser ausschließlich Verbindungen zu dieser Seite selbst und zu unserer eigenen
+            Statistik-Adresse stats.wohnungsbautracker.de.
           </Absatz>
         </Abschnitt>
 
@@ -165,8 +167,56 @@ function DatenschutzPage() {
             bis zu dessen Klärung erfordert.
           </Absatz>
           <Absatz>
-            Über diese Protokolle hinaus speichern wir nichts: In der Datenbank des Trackers stehen
-            ausschließlich Bauprojekte, Beschlüsse und Statistiken — keine Besucherdaten.
+            Über diese Protokolle hinaus fällt beim Aufruf nur die im nächsten Abschnitt
+            beschriebene Besucherstatistik an. In der Datenbank des Trackers stehen ausschließlich
+            Bauprojekte, Beschlüsse und Statistiken — keine Besucherdaten.
+          </Absatz>
+        </Abschnitt>
+
+        <Abschnitt titel="Besucherstatistik (GoatCounter)">
+          <Absatz>
+            Wir möchten wissen, wie viele Menschen den Tracker lesen, welche Projekte sie
+            interessieren und über welche Wege sie hierher finden. Dafür betreiben wir auf unserem
+            eigenen Server unter stats.wohnungsbautracker.de eine Instanz der quelloffenen
+            Statistik-Software{' '}
+            <a
+              href="https://www.goatcounter.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              className={linkStil}
+            >
+              GoatCounter ↗
+            </a>
+            . Es ist kein fremder Dienst beteiligt; die Daten verlassen unsere Infrastruktur nicht.
+          </Absatz>
+          <Absatz>Bei jedem Seitenaufruf wird dafür festgehalten:</Absatz>
+          <Liste
+            punkte={[
+              'die aufgerufene Seite (Pfad)',
+              'die zuvor besuchte Seite (Referrer), sofern dein Browser sie sendet',
+              'Browser- und Betriebssystemkennung (User-Agent)',
+              'die Bildschirmgröße',
+              'das Herkunftsland, abgeleitet aus der IP-Adresse',
+              'Datum und Uhrzeit',
+            ]}
+          />
+          <Absatz>
+            Was dabei nicht passiert: GoatCounter setzt kein Cookie und legt nichts im Speicher
+            deines Browsers ab. Die IP-Adresse selbst wird nicht gespeichert — sie dient nur
+            flüchtig dazu, das Herkunftsland zu bestimmen und Aufrufe derselben Person innerhalb
+            weniger Stunden über einen nicht umkehrbaren, regelmäßig verworfenen Hash als einen
+            Besuch zu zählen. Eine Wiedererkennung über Tage hinweg oder über andere Websites ist
+            damit ausgeschlossen; es entstehen keine Besucherprofile, nur Summen. Die Statistik des
+            internen Redaktionsbereichs unter /admin wird gar nicht erst erhoben.
+          </Absatz>
+          <Absatz>
+            Rechtsgrundlage ist unser berechtigtes Interesse daran zu verstehen, wie dieses
+            politische Informationsangebot genutzt wird (Art. 6 Abs. 1 lit. f DSGVO). Da auf deinem
+            Gerät nichts gespeichert und nichts Gespeichertes ausgelesen wird, ist keine
+            Einwilligung nach § 25 TDDDG erforderlich — deshalb gibt es weiterhin kein
+            Cookie-Banner. Der Verarbeitung kannst du jederzeit widersprechen (Art. 21 DSGVO), am
+            einfachsten formlos per E-Mail; außerdem verhindern gängige Werbe- und Trackingblocker
+            die Zählung wirksam, ohne dass die Seite dadurch schlechter funktioniert.
           </Absatz>
         </Abschnitt>
 
