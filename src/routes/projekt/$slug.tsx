@@ -22,6 +22,7 @@ import BerlinSvgMap from '../../components/BerlinSvgMap'
 import WbtLogo from '../../components/WbtLogo'
 import { ARCHIVO_FONT_LINKS, GREEN, STATUS_CHIP } from '../../lib/campaign'
 import { absolut } from '../../lib/site'
+import { zaehleBelegKlick } from '../../lib/statistik'
 
 const BLUE = '#0B2B6B'
 const DEEP = '#02173A'
@@ -131,6 +132,7 @@ function Belegdokumente({ dokumente }: { dokumente: Belegdokument[] }) {
             rel="noopener noreferrer"
             className="font-bold text-black underline decoration-[#1CB5E5] hover:opacity-70"
             title="PDF der Drucksache — hier hinterlegte Kopie, öffnet im neuen Tab"
+            onClick={() => zaehleBelegKlick('drucksache')}
           >
             {d.nummer ? `${d.nummer} ${d.titel}` : d.titel} ↗
           </a>
@@ -146,6 +148,7 @@ function Belegdokumente({ dokumente }: { dokumente: Belegdokument[] }) {
                 rel="noopener noreferrer"
                 className="text-black/45 underline decoration-black/20 hover:text-black/70"
                 title="Vorgangsseite mit vollständiger Beratungsfolge"
+                onClick={() => zaehleBelegKlick('drucksache')}
               >
                 Vorgang
               </a>
@@ -160,6 +163,7 @@ function Belegdokumente({ dokumente }: { dokumente: Belegdokument[] }) {
                 rel="noopener noreferrer"
                 className="text-black/45 underline decoration-black/20 hover:text-black/70"
                 title={`Archivierte Fassung${d.archiv.stand ? ` vom ${d.archiv.stand}` : ''}`}
+                onClick={() => zaehleBelegKlick('drucksache')}
               >
                 Archiv
               </a>
@@ -401,6 +405,7 @@ function ProjectDetailPage() {
                             target="_blank"
                             rel="noopener noreferrer"
                             className="inline-block font-bold text-black underline decoration-[#1CB5E5] hover:opacity-70"
+                            onClick={() => zaehleBelegKlick('beleg')}
                           >
                             {f.titel || 'Quelle'} ↗
                           </a>
@@ -411,6 +416,7 @@ function ProjectDetailPage() {
                               rel="noopener noreferrer"
                               className="text-[11px] font-bold uppercase tracking-[0.1em] text-black/40 underline decoration-black/20 hover:text-black/70"
                               title={`Archivierte Fassung${f.archiv.stand ? ` vom ${f.archiv.stand}` : ''} — falls das Original verschwindet`}
+                              onClick={() => zaehleBelegKlick('beleg')}
                             >
                               Archiv{f.archiv.stand ? ` ${f.archiv.stand}` : ''}
                             </a>
@@ -438,6 +444,7 @@ function ProjectDetailPage() {
                           target="_blank"
                           rel="noopener noreferrer"
                           className="font-bold text-black underline decoration-[#1CB5E5] hover:opacity-70"
+                          onClick={() => zaehleBelegKlick('quelle')}
                         >
                           {q.title} ↗
                         </a>
@@ -488,7 +495,7 @@ function ProjectDetailPage() {
                     <ul className="mt-3 space-y-2">
                       {meta.quellen.map((q, i) => (
                         <li key={i} className="text-sm">
-                          <a href={q.url} target="_blank" rel="noopener noreferrer" className="font-bold text-black underline decoration-[#1CB5E5] hover:opacity-70">
+                          <a href={q.url} target="_blank" rel="noopener noreferrer" className="font-bold text-black underline decoration-[#1CB5E5] hover:opacity-70" onClick={() => zaehleBelegKlick('quelle')}>
                             Quelle {i + 1} ↗
                           </a>
                           {q.zitat && <span className="ml-2 italic text-black/50">„{q.zitat}"</span>}

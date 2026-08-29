@@ -201,6 +201,12 @@ function DatenschutzPage() {
             ]}
           />
           <Absatz>
+            Außerdem zählen wir, wie oft Besucherinnen und Besucher den Belegen tatsächlich folgen
+            — also auf einer Projektseite eine Drucksache, einen Beleg oder eine Quelle anklicken.
+            Gezählt wird dabei nur die Kategorie des Links (Drucksache, Beleg oder Quelle), nicht
+            die Zieladresse, nicht die Projektseite und nicht, wer geklickt hat.
+          </Absatz>
+          <Absatz>
             Was dabei nicht passiert: GoatCounter setzt kein Cookie und legt nichts im Speicher
             deines Browsers ab. Die IP-Adresse selbst wird nicht gespeichert — sie dient nur
             flüchtig dazu, das Herkunftsland zu bestimmen und Aufrufe derselben Person innerhalb
