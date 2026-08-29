@@ -37,7 +37,7 @@ Ein paar Unterscheidungen prägen den ganzen Code:
 Daneben: `bvv_parties` (Zählgemeinschaften der zwölf Bezirke) und `construction_stats`
 (Genehmigungen und Fertigstellungen je Jahr, Amt für Statistik Berlin-Brandenburg).
 
-Stand August 2026: 78 Projekte in der Datenbank, davon 48 öffentlich sichtbar;
+Stand August 2026: 80 Projekte in der Datenbank, davon 48 öffentlich sichtbar;
 Baustatistik 2015–2025.
 
 ## Schnellstart
@@ -64,6 +64,8 @@ src/
     index.tsx          Startseite: Bilanz, Karte, Projektwall
     projekt/$slug.tsx  Projektseite mit Belegapparat
     lizenzen.tsx       Quellen- und Lizenznachweis
+    impressum.tsx      Impressum
+    datenschutz.tsx    Datenschutzerklärung
     og/$slug[.]png.ts  Teilen-Vorschaubild pro Projekt
     admin/             Projekte, Baustatistik, BVV-Mehrheiten
   server/            Serverfunktionen — Datenzugriff, Auth, Cache, OG-Rendering
@@ -93,6 +95,7 @@ Zwei Konventionen, die sonst überraschen:
 | `bun --bun run build` | Produktionsbuild nach `.output/` |
 | `bun --bun run preview` | Build lokal ausliefern |
 | `bun run icons` | Favicons, App-Icons und `og/default.png` aus `public/favicon.svg` erzeugen |
+| `bun run map-data` | `src/lib/berlin-map-data.ts` (SVG-Pfade der Bezirke) aus dem GeoJSON neu erzeugen |
 | `bunx drizzle-kit push` | Schemaänderungen auf die lokale `sqlite.db` schreiben |
 | `bun migrate.ts` | Fehlende Spalten additiv ergänzen (läuft beim Containerstart) |
 
