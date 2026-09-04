@@ -20,6 +20,7 @@ import {
 } from '../lib/design-data'
 import { ARCHIVO_FONT_LINKS, GREEN, STATUS_CHIP } from '../lib/campaign'
 import { SITE_URL } from '../lib/site'
+import { seiteJsonLd } from '../lib/seo'
 import BerlinSvgMap from '../components/BerlinSvgMap'
 import FdpLogo from '../components/FdpLogo'
 
@@ -35,6 +36,8 @@ export const Route = createFileRoute('/')({
       { property: 'og:title', content: TITEL },
       { property: 'og:description', content: BESCHREIBUNG },
       { property: 'og:url', content: SITE_URL },
+      // Strukturierte Daten: Seitenname und Herausgeber, siehe lib/seo.ts.
+      { 'script:ld+json': seiteJsonLd(BESCHREIBUNG) },
     ],
     links: [...ARCHIVO_FONT_LINKS, { rel: 'canonical', href: SITE_URL }],
   }),

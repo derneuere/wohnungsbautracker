@@ -22,6 +22,7 @@ import BerlinSvgMap from '../../components/BerlinSvgMap'
 import FdpLogo from '../../components/FdpLogo'
 import { ARCHIVO_FONT_LINKS, GREEN, STATUS_CHIP } from '../../lib/campaign'
 import { absolut } from '../../lib/site'
+import { projektBeschreibung, projektJsonLd } from '../../lib/seo'
 import { zaehleBelegKlick } from '../../lib/statistik'
 
 const BLUE = '#0B2B6B'
@@ -63,9 +64,7 @@ export const Route = createFileRoute('/projekt/$slug')({
   head: ({ loaderData, params }) => {
     const p = loaderData?.project
     const title = p ? `${p.title} — Wohnungsbau-Tracker Berlin` : 'Projekt — Wohnungsbau-Tracker Berlin'
-    const desc = p
-      ? `${(STATUS_CHIP[p.status]?.label || p.status).toLowerCase()} in ${p.bezirk}${p.unitCount ? `, ${fmt(p.unitCount)} geplante Wohnungen` : ''}: ${(p.description || p.title).slice(0, 150)}`
-      : 'Projektdetails im Wohnungsbau-Tracker Berlin.'
+    const desc = p ? projektBeschreibung(p) : 'Projektdetails im Wohnungsbau-Tracker Berlin.'
     // Die Vorschaukarte wird pro Projekt gerendert (/og/<slug>.png) und zeigt
     // Status, Bezirk, Titel und die Zahl der Wohnungen — der Slug enthält die
     // ID, mehr braucht die Route nicht.
@@ -82,6 +81,11 @@ export const Route = createFileRoute('/projekt/$slug')({
         { property: 'og:image', content: bild },
         { property: 'og:image:alt', content: p ? `${p.title} — ${p.bezirk}` : 'Wohnungsbau-Tracker Berlin' },
         { name: 'twitter:image', content: bild },
+        // Strukturierte Daten: TanStack rendert das als
+        // <script type="application/ld+json"> und maskiert spitze Klammern und
+        // Ampersand als Unicode-Escapes — JSON bleibt gültig, ausgeführt wird
+        // nichts.
+        ...(p ? [{ 'script:ld+json': projektJsonLd(p) }] : []),
       ],
       links: [...ARCHIVO_FONT_LINKS, { rel: 'canonical', href: absolut(`/projekt/${slug}`) }],
     }
