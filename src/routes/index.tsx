@@ -21,7 +21,7 @@ import {
 import { ARCHIVO_FONT_LINKS, GREEN, STATUS_CHIP } from '../lib/campaign'
 import { SITE_URL } from '../lib/site'
 import BerlinSvgMap from '../components/BerlinSvgMap'
-import WbtLogo from '../components/WbtLogo'
+import FdpLogo from '../components/FdpLogo'
 
 const TITEL = 'Wohnungsbau-Tracker Berlin: Wo blockiert wird, ist nichts möglich.'
 const BESCHREIBUNG =
@@ -143,7 +143,7 @@ function KampagnePage() {
       <nav className="sticky top-0 z-[2000] border-b border-black/5 bg-white">
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-5 sm:px-8">
           <a href="#top" onClick={anker('top')} className="flex items-center no-underline" title="Wohnungsbau-Tracker Berlin">
-            <WbtLogo />
+            <FdpLogo />
           </a>
           <div className="flex items-center gap-6">
             <div className="hidden gap-6 text-[13px] font-bold uppercase tracking-[0.12em] text-black sm:flex">

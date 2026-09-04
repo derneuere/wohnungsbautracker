@@ -1,6 +1,6 @@
 import { Link, createFileRoute } from '@tanstack/react-router'
 import { ARCHIVO_FONT_LINKS, BLACK, BLUE, CYAN, DEEP, YELLOW, body, display } from '../lib/campaign'
-import WbtLogo from '../components/WbtLogo'
+import FdpLogo from '../components/FdpLogo'
 
 export const Route = createFileRoute('/lizenzen')({
   head: () => ({
@@ -73,7 +73,7 @@ function LizenzenPage() {
       <header className="px-5 py-10 sm:px-8" style={{ backgroundColor: BLUE }}>
         <div className="mx-auto max-w-3xl">
           <Link to="/" className="inline-block no-underline" title="Zur Startseite">
-            <WbtLogo height={32} />
+            <FdpLogo height={32} color="white" />
           </Link>
           <h1 className="mt-8" style={{ ...display, color: YELLOW, fontSize: 'clamp(2rem, 5vw, 3.2rem)', lineHeight: 1.05 }}>
             Lizenzen & Quellen.
