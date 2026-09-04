@@ -95,6 +95,11 @@ const config = defineConfig({
         // praktisch dasselbe wie eine Stunde.
         '/': { cache: { maxAge: 300, swr: true } },
         '/projekt/**': { cache: { maxAge: 300, swr: true } },
+        // Die Sitemap lesen Crawler in Schüben, oft mehrere kurz nacheinander.
+        // Sie ändert sich nur mit einer Redaktionsänderung, und die leert
+        // diesen Cache ohnehin — deshalb darf die Obergrenze hier eine Stunde
+        // sein. Der Browser-TTL spielt für eine XML-Datei keine Rolle.
+        '/sitemap.xml': { cache: { maxAge: 3600, swr: true } },
         // `/og/<slug>.png` braucht hier nichts: der Handler setzt seinen Header
         // selbst und `server/og-image.ts` hält die gerenderten Karten in einer
         // Map, deren Schlüssel `updatedAt` enthält — der Cache verfällt bei

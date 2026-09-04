@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as LizenzenRouteImport } from './routes/lizenzen'
 import { Route as ImpressumRouteImport } from './routes/impressum'
 import { Route as DatenschutzRouteImport } from './routes/datenschutz'
@@ -20,6 +21,11 @@ import { Route as OgSlugDotpngRouteImport } from './routes/og/$slug[.]png'
 import { Route as AdminStatsRouteImport } from './routes/admin/stats'
 import { Route as AdminBvvRouteImport } from './routes/admin/bvv'
 
+const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
+  id: '/sitemap.xml',
+  path: '/sitemap.xml',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const LizenzenRoute = LizenzenRouteImport.update({
   id: '/lizenzen',
   path: '/lizenzen',
@@ -77,6 +83,7 @@ export interface FileRoutesByFullPath {
   '/datenschutz': typeof DatenschutzRoute
   '/impressum': typeof ImpressumRoute
   '/lizenzen': typeof LizenzenRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/admin/bvv': typeof AdminBvvRoute
   '/admin/stats': typeof AdminStatsRoute
   '/og/$slug.png': typeof OgSlugDotpngRoute
@@ -88,6 +95,7 @@ export interface FileRoutesByTo {
   '/datenschutz': typeof DatenschutzRoute
   '/impressum': typeof ImpressumRoute
   '/lizenzen': typeof LizenzenRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/admin/bvv': typeof AdminBvvRoute
   '/admin/stats': typeof AdminStatsRoute
   '/og/$slug.png': typeof OgSlugDotpngRoute
@@ -101,6 +109,7 @@ export interface FileRoutesById {
   '/datenschutz': typeof DatenschutzRoute
   '/impressum': typeof ImpressumRoute
   '/lizenzen': typeof LizenzenRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/admin/bvv': typeof AdminBvvRoute
   '/admin/stats': typeof AdminStatsRoute
   '/og/$slug.png': typeof OgSlugDotpngRoute
@@ -115,6 +124,7 @@ export interface FileRouteTypes {
     | '/datenschutz'
     | '/impressum'
     | '/lizenzen'
+    | '/sitemap.xml'
     | '/admin/bvv'
     | '/admin/stats'
     | '/og/$slug.png'
@@ -126,6 +136,7 @@ export interface FileRouteTypes {
     | '/datenschutz'
     | '/impressum'
     | '/lizenzen'
+    | '/sitemap.xml'
     | '/admin/bvv'
     | '/admin/stats'
     | '/og/$slug.png'
@@ -138,6 +149,7 @@ export interface FileRouteTypes {
     | '/datenschutz'
     | '/impressum'
     | '/lizenzen'
+    | '/sitemap.xml'
     | '/admin/bvv'
     | '/admin/stats'
     | '/og/$slug.png'
@@ -151,12 +163,20 @@ export interface RootRouteChildren {
   DatenschutzRoute: typeof DatenschutzRoute
   ImpressumRoute: typeof ImpressumRoute
   LizenzenRoute: typeof LizenzenRoute
+  SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   OgSlugDotpngRoute: typeof OgSlugDotpngRoute
   ProjektSlugRoute: typeof ProjektSlugRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/sitemap.xml': {
+      id: '/sitemap.xml'
+      path: '/sitemap.xml'
+      fullPath: '/sitemap.xml'
+      preLoaderRoute: typeof SitemapDotxmlRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/lizenzen': {
       id: '/lizenzen'
       path: '/lizenzen'
@@ -252,6 +272,7 @@ const rootRouteChildren: RootRouteChildren = {
   DatenschutzRoute: DatenschutzRoute,
   ImpressumRoute: ImpressumRoute,
   LizenzenRoute: LizenzenRoute,
+  SitemapDotxmlRoute: SitemapDotxmlRoute,
   OgSlugDotpngRoute: OgSlugDotpngRoute,
   ProjektSlugRoute: ProjektSlugRoute,
 }
