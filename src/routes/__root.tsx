@@ -1,7 +1,7 @@
 import { HeadContent, Outlet, Scripts, createRootRoute, Link, useRouter, useRouterState } from '@tanstack/react-router'
 import { useEffect } from 'react'
 import appCss from '../styles.css?url'
-import WbtLogo from '../components/WbtLogo'
+import FdpLogo from '../components/FdpLogo'
 import { BLUE, YELLOW } from '../lib/campaign'
 import { absolut } from '../lib/site'
 
@@ -103,7 +103,7 @@ function AdminHeader() {
     <header className="sticky top-0 z-[1000] border-b border-black/5 bg-white" style={{ fontFamily: "'Archivo', 'Helvetica Neue', sans-serif" }}>
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-5">
         <Link to="/" className="flex items-center gap-3 no-underline" title="Zur Startseite">
-          <WbtLogo height={30} />
+          <FdpLogo height={30} />
           <span className="px-2 py-1 text-[10px] font-black tracking-[0.2em]" style={{ backgroundColor: YELLOW, color: BLUE }}>
             ADMIN
           </span>

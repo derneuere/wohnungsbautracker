@@ -19,7 +19,7 @@ import {
   zerlegeMitFussnoten,
 } from '../../lib/design-data'
 import BerlinSvgMap from '../../components/BerlinSvgMap'
-import WbtLogo from '../../components/WbtLogo'
+import FdpLogo from '../../components/FdpLogo'
 import { ARCHIVO_FONT_LINKS, GREEN, STATUS_CHIP } from '../../lib/campaign'
 import { absolut } from '../../lib/site'
 import { zaehleBelegKlick } from '../../lib/statistik'
@@ -204,7 +204,7 @@ function ProjectDetailPage() {
       <nav className="sticky top-0 z-[2000] border-b border-black/5 bg-white">
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-5 sm:px-8">
           <Link to="/" className="flex items-center no-underline" title="Zur Startseite">
-            <WbtLogo height={32} />
+            <FdpLogo height={32} />
           </Link>
           {canGoBack ? (
             <button
