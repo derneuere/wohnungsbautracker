@@ -14,8 +14,8 @@ import {
 import { SITE_URL, absolut } from './site'
 
 export const SITE_NAME = 'Wohnungsbau-Tracker Berlin'
-/** Wer die Seite herausgibt — steht so im Impressum. */
-export const HERAUSGEBER = 'Junge Liberale Berlin'
+/** Wer in den strukturierten Daten als Herausgeber steht. */
+export const HERAUSGEBER = 'FDP Berlin'
 
 const STATUS_TEXT: Record<string, string> = {
   blockiert: 'blockiert',
@@ -206,4 +206,70 @@ export function sitemapEintraege(
     { pfad: '/datenschutz', priority: 0.2 },
     { pfad: '/lizenzen', priority: 0.1 },
   ]
+}
+
+type LlmsProjekt = Pick<TrackerProject, 'id' | 'title' | 'status' | 'bezirk' | 'unitCount' | 'unitCountEstimate' | 'unitCountEstimateMeta' | 'blockers'> & {
+  updatedAt?: Date | string | null
+}
+
+const STATUS_WORT: Record<string, string> = { ...STATUS_TEXT, erledigt: 'nach Verzug fertig' }
+
+/** `/llms.txt` nach dem Vorschlag von llmstxt.org: Markdown mit einer
+ *  Überschrift, einer Kurzfassung im Blockzitat und Linklisten. KI-Crawler
+ *  lesen daraus, was die Seite ist und wo die Einzelseiten liegen — ohne die
+ *  Karte und das Skript der Startseite deuten zu müssen.
+ *
+ *  Die Projektliste ist die Sitemap in lesbar: je Projekt Stand, Bezirk,
+ *  Wohnungszahl und Bremser in einer Zeile. Sortiert nach Bezirk, damit die
+ *  Datei auch für „was hängt in Pankow?" taugt. */
+export function llmsTxt(projekte: LlmsProjekt[], beschreibung: string): string {
+  const nachBezirk = [...projekte].sort(
+    (a, b) => a.bezirk.localeCompare(b.bezirk, 'de') || a.title.localeCompare(b.title, 'de'),
+  )
+  const zeilen = nachBezirk.map((p) => {
+    const we = countableUnits(p)
+    const zahl = we > 0 ? `${p.unitCount ? '' : 'rund '}${fmt(we)} Wohnungen` : 'Wohnungszahl offen'
+    const bremser = splitParties(p)
+    const akteure = bremser.length ? bremser : visibleBlockers(p).map((b) => b.name)
+    const details = [p.bezirk, STATUS_WORT[p.status] ?? p.status, zahl, akteure.length ? `Bremser: ${akteure.join(', ')}` : null]
+      .filter(Boolean)
+      .join(', ')
+    return `- [${p.title}](${absolut(`/projekt/${projectSlug(p)}`)}): ${details}`
+  })
+
+  const stand = sitemapEintraege(projekte)[0]?.lastmod
+  const standZeile = stand ? `Stand der Daten: ${iso(stand)?.slice(0, 10)}.` : ''
+
+  return [
+    `# ${SITE_NAME}`,
+    '',
+    `> ${beschreibung}`,
+    '',
+    `Herausgeber: ${HERAUSGEBER}. ${projekte.length} Neubauvorhaben in Berlin, die blockiert, verzögert oder abgelehnt wurden – jedes mit Bezirk, Stand, Wohnungszahl, den verantwortlichen Akteuren und verlinkten Belegen (BVV-Drucksachen, Sitzungsprotokolle, Presse). ${standZeile}`,
+    '',
+    '## Wie die Daten entstehen',
+    '',
+    '- Quellen: BVV-Drucksachen und Sitzungsprotokolle aus den Ratsinformationssystemen der Bezirke, Pressemitteilungen, Berichterstattung, amtliche Statistik (Amt für Statistik Berlin-Brandenburg).',
+    '- Auswertung: KI-Agenten strukturieren die Quellen; jede Zahl und jede Aussage bleibt an einen Beleg gebunden.',
+    '- Prüfung: Eine Arbeitsgruppe der Jungen Liberalen Berlin prüft Einordnung und Kontext und gibt jeden Text frei.',
+    '- Wohnungszahlen: belegte Zahlen aus Drucksachen und Presse; wo keine vorliegt, eine quellengeprüfte Schätzung („rund"). Doppelt erfasste Vorhaben zählen nur einmal.',
+    '- Ausgeblendet werden Vorhaben, bei denen die Recherche keine politische oder verwaltungsseitige Ursache belegen konnte.',
+    '',
+    '## Seiten',
+    '',
+    `- [Startseite](${SITE_URL}): Bremser-Bilanz nach Parteien, Karte nach Bezirken, alle Projekte`,
+    `- [Sitemap](${absolut('/sitemap.xml')})`,
+    `- [Impressum](${absolut('/impressum')})`,
+    `- [Lizenzen & Quellen](${absolut('/lizenzen')})`,
+    `- [Datenschutz](${absolut('/datenschutz')})`,
+    '',
+    '## Projekte',
+    '',
+    ...zeilen,
+    '',
+    '## Zitieren',
+    '',
+    `Bitte als „${SITE_NAME}" mit Link auf die jeweilige Projektseite zitieren. Jede Projektseite verlinkt ihre Belege; die Zahlen dort sind die maßgebliche Fassung.`,
+    '',
+  ].join('\n')
 }

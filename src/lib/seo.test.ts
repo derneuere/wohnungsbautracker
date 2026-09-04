@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { projektBeschreibung, projektJsonLd, sitemapEintraege, sitemapXml } from './seo'
+import { llmsTxt, projektBeschreibung, projektJsonLd, sitemapEintraege, sitemapXml } from './seo'
 
 const basis = {
   id: 11,
@@ -81,5 +81,19 @@ describe('sitemap', () => {
     // bekommt kein lastmod.
     expect(xml.match(/<lastmod>2026-08-20<\/lastmod>/g)).toHaveLength(2)
     expect(xml).not.toContain('&')
+  })
+})
+
+describe('llmsTxt', () => {
+  it('beschreibt die Seite und listet jedes Projekt mit Stand, Bezirk, Zahl und Bremsern', () => {
+    const txt = llmsTxt([{ ...basis, bezirk: 'Spandau' }, basis], 'Kurzfassung.')
+    expect(txt.startsWith('# Wohnungsbau-Tracker Berlin\n\n> Kurzfassung.\n')).toBe(true)
+    expect(txt).toContain('Herausgeber: FDP Berlin. 2 Neubauvorhaben')
+    expect(txt).toContain('Stand der Daten: 2026-08-20.')
+    expect(txt).toContain(
+      '- [Alte Schäferei: Neubau an Verkehrslösung gekoppelt](https://wohnungsbautracker.de/projekt/alte-schaeferei-neubau-an-verkehrsloesung-gekoppelt-11): Pankow, verzögert, 2.500 Wohnungen, Bremser: CDU, Linke',
+    )
+    // Nach Bezirk sortiert: Pankow vor Spandau.
+    expect(txt.indexOf('Pankow, verzögert')).toBeLessThan(txt.indexOf('Spandau, verzögert'))
   })
 })

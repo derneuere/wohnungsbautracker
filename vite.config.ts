@@ -100,6 +100,8 @@ const config = defineConfig({
         // diesen Cache ohnehin — deshalb darf die Obergrenze hier eine Stunde
         // sein. Der Browser-TTL spielt für eine XML-Datei keine Rolle.
         '/sitemap.xml': { cache: { maxAge: 3600, swr: true } },
+        // llms.txt aus demselben Grund und mit derselben Obergrenze.
+        '/llms.txt': { cache: { maxAge: 3600, swr: true } },
         // `/og/<slug>.png` braucht hier nichts: der Handler setzt seinen Header
         // selbst und `server/og-image.ts` hält die gerenderten Karten in einer
         // Map, deren Schlüssel `updatedAt` enthält — der Cache verfällt bei
